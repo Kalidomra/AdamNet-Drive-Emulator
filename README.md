@@ -1,5 +1,5 @@
-# ADAMNet-Drive-Emulator
-ADAMNet Drive Emulator (ADE)
+# AdamNet-Drive-Emulator
+AdamNet Drive Emulator (ADE)
 
 This is beta. Use at your own risk.
 
