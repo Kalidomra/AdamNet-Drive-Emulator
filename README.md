@@ -6,8 +6,8 @@ This is beta. Use at your own risk.
 This is an Arduino Mega 2560 based SD card disk drive emulator. It supports 100 files and long file names (up to 40 characters are displayed).  The following materials are used:
 
  1. Arduino Mega 2560
- 2. 1602 Keypad Shield
- 3. SD Card Shield
+ 2. 1602 Keypad Shield - Arduino Verison
+ 3. SD Card Shield - Micro SD with level converter
  4. 6 connector phone cable with 1k resistor.
 
 How it is connected:
