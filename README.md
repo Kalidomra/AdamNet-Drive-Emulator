@@ -1,5 +1,4 @@
 # ADAMNet-Drive-Emulator
-Arduino Mega ColecoVision Adam Disk Drive Emulator
 ADAMNet Drive Emulator (ADE)
 
 This is beta. Use at your own risk.
