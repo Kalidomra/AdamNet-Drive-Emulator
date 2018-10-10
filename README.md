@@ -12,6 +12,8 @@ This is an Arduino Mega 2560 based SD card disk drive emulator. It supports 100 
 
 How it is connected:
 
+ Look at the schematic.jpg file.
+
  1. Mount the 1602 Keypad Shield to the Mega.
  2. Connect the SD Card Shield to the Mega.
  	Use the following pins: MISO = 50, MOSI = 51, SCK = 52, CS = 53, 5v and GND
