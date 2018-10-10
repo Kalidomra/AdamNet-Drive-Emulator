@@ -17,7 +17,7 @@ How it is connected:
  1. Mount the 1602 Keypad Shield to the Mega.
  2. Connect the SD Card Shield to the Mega.
  	Use the following pins: MISO = 50, MOSI = 51, SCK = 52, CS = 53, 5v and GND
- 3. Attached the phone cord to pin 21 though the 1k resistor and ground. 
+ 3. Attached the phone cord to pin 21 though the 1k resistor. Connect the ground. 
 
 How it works:
 
