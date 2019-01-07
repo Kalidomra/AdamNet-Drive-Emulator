@@ -10,7 +10,7 @@ This is an Arduino Mega 2560 based SD card disk drive emulator. It supports 100 
  1. Arduino Mega 2560
  2. 1602 Keypad Shield - Arduino Version
  3. SD Card Shield - Micro SD with level converter
- 4. 6 connector phone cable with 1k resistor.
+ 4. 6 connector phone cable with 100ohm resistor.
 
 How it is connected:
 
@@ -23,4 +23,4 @@ How it is connected:
 
 How it works:
 
-Place up to 100 files in the root of a FAT32 SD card. These need to be in the DSK format commonly found on the web. On startup of the Arduino there is no mounted file. Scroll though the files using the up and down keys. Mount the currently selected file with the right key. Unmount with the left key. The currently mounted file is shown on the top row. The select key will change the current device number and save to eeprom. You will need to reset the Adam on device number change.
+Place up to 100 files in the root of a FAT32 SD card. These need to be in the DSK format commonly found on the web. On startup of the Arduino there is no mounted file. Scroll though the files using the up and down keys. Unmount or mount the currently selected file with the right key. Unmount with the left key. The currently mounted file for the drive is shown on the top row. The select key will change the current drive.
