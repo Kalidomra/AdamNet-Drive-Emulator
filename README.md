@@ -5,7 +5,7 @@ This is a beta. Use at your own risk.
 
 https://youtu.be/EGIlHEr0xxA
 
-Install the SD Crad Library to your Arduino IDE: https://github.com/greiman/SdFat
+Install the SD Card Library to your Arduino IDE: https://github.com/greiman/SdFat
 
 This is an Arduino Mega 2560 based SD card disk drive emulator. It supports 100 files and long file names (up to 40 characters are displayed).  The following materials are used:
 
