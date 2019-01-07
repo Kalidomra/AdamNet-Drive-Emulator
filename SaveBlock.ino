@@ -1,10 +1,30 @@
-int SaveBlock(unsigned long blocknumber){                // Save the buffer array to the SD card
+int SaveBlock(unsigned long blocknumber, byte devicenumber){                // Save the buffer array to the SD card
   digitalWrite(statusled,HIGH);             // Turn on the status LED
   int remainder = blocknumber % 4;
-  file.open(&dirFile,filesindex[MountedFile], O_READ | O_WRITE);
+  switch(devicenumber){
+  case 4:
+    file.open(&dirFile,filesindex[MountedFile4], O_READ | O_WRITE);
+    Serial.print("D1: Writing: ");
+    Serial.println(blocknumber);
+    break;
+  case 5:
+    file.open(&dirFile,filesindex[MountedFile5], O_READ | O_WRITE);
+    Serial.print("D2: Writing: ");
+    Serial.println(blocknumber);
+    break;
+  case 6:
+    file.open(&dirFile,filesindex[MountedFile6], O_READ | O_WRITE);
+    Serial.print("D3: Writing: ");
+    Serial.println(blocknumber);
+    break;
+  case 7:
+    file.open(&dirFile,filesindex[MountedFile7], O_READ | O_WRITE);
+    Serial.print("D4: Writing: ");
+    Serial.println(blocknumber);
+    break;
+
+  }
   unsigned long blocklocation = blocknumber*0x00000400;
-  Serial.print("Writing: ");
-  Serial.println(blocknumber);
   file.seekSet(blocklocation);
   for (int i=3; i<=514;i++){
       file.write(blockdata[i]);
