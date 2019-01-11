@@ -3,73 +3,30 @@ void ProcessKeys(){                                                // LCD and Bu
   if (ButtonDelay >= 150){                 // Only process the key inputs every 150 ms
     keypressIn = analogRead(0);            // Read Analog pin 0 (Takes 110 us)
     if (IncomingCommandFlag == 0){         // Make sure we are not doing LCD stuff while Command is waiting
-      if (keypressIn < 50){                // Right --> Mount the Currently Selected Disk Image
-        switch (devicenumber_displayed){
-          case 4:
-            if (MountedFile4 != 0){
-              MountedFile4 = 0;
-              Serial.println("Unmounting D1");
+      if (keypressIn < 50){                // Right -->  Mount the Currently Selected Disk Image
+            if (MountedFile[devicenumber_displayed-4] != 0){
+              MountedFile[devicenumber_displayed-4] = 0;
+              Serial.print("Unmounting D");
+              Serial.println(devicenumber_displayed - 3);
               StatusSetup(0x43,devicenumber_displayed);                 // Set the status to "no disk"
             }
             else{
-              MountedFile4 = currentfile;
-              Serial.print("Mounting on D1: ");
-              Serial.println(sdfiles[MountedFile4]);
+              MountedFile[devicenumber_displayed-4] = currentfile;
+              Serial.print("Mounting D");
+              Serial.print(devicenumber_displayed - 3);
+              Serial.print(": ");
+              Serial.println(GetFileName(filesindex[MountedFile[devicenumber_displayed-4]]));
+              loadedblock[devicenumber_displayed-4] = -1;               // We don't have a block loaded for the new file
               StatusSetup(0x40,devicenumber_displayed);                 // Set the status to 'disk in"
             }
-            EepromStringWrite(400, sdfiles[MountedFile4]);
-            EEPROM.write(4, MountedFile4);
-            break;
-          case 5:
-            if (MountedFile5 != 0){
-              MountedFile5 = 0;
-              Serial.println("Unmounting D2");
-              StatusSetup(0x43,devicenumber_displayed);                 // Set the status to "no disk"
-            }
-            else{
-              MountedFile5 = currentfile;
-              Serial.print("Mounting on D2: ");
-              Serial.println(sdfiles[MountedFile5]);
-              StatusSetup(0x40,devicenumber_displayed);                 // Set the status to 'disk in"
-            }
-            EepromStringWrite(500, sdfiles[MountedFile5]);            
-            EEPROM.write(5, MountedFile5);
-            break;
-          case 6:            
-            if (MountedFile6 != 0){
-              MountedFile6 = 0;
-              Serial.println("Unmounting D3");
-              StatusSetup(0x43,devicenumber_displayed);                 // Set the status to "no disk"
-            }
-            else{
-              MountedFile6 = currentfile;
-              Serial.print("Mounting on D3: ");
-              Serial.println(sdfiles[MountedFile6]);
-              StatusSetup(0x40,devicenumber_displayed);                 // Set the status to 'disk in"
-            }
-            EepromStringWrite(600, sdfiles[MountedFile6]);            
-            EEPROM.write(6, MountedFile6);
-            break;
-          case 7:           
-            if (MountedFile7 != 0){
-              MountedFile7 = 0;
-              Serial.println("Unmounting D4");
-              StatusSetup(0x43,devicenumber_displayed);                 // Set the status to "no disk"
-            }
-            else{
-              MountedFile7 = currentfile;
-              Serial.print("Mounting on D4: ");
-              Serial.println(sdfiles[MountedFile7]);
-              StatusSetup(0x40,devicenumber_displayed);                 // Set the status to 'disk in"
-            }
-            EepromStringWrite(700, sdfiles[MountedFile7]);            
-            EEPROM.write(7, MountedFile7);
-            break;
-        }        
-        loadedblock = -1;                  // We don't have a block loaded for the new file
-        refreshscreen = 1;
+            EepromStringWrite((devicenumber_displayed * 100) + 2, GetFileName(filesindex[MountedFile[devicenumber_displayed-4]]));
+            byte hiByte = highByte(MountedFile[devicenumber_displayed-4]);
+            byte loByte = lowByte(MountedFile[devicenumber_displayed-4]);
+            EEPROM.write(devicenumber_displayed*100, hiByte);
+            EEPROM.write((devicenumber_displayed*100)+1, loByte);
+            refreshscreen = 1;
       }  
-      else if (keypressIn < 250){          // Up --> Scroll Up in the List
+      else if (keypressIn < 250){          // Up -->     Scroll Up in the List
         if (currentfile == 1){
           currentfile = numberoffiles;
         }
@@ -78,7 +35,7 @@ void ProcessKeys(){                                                // LCD and Bu
         }
         refreshscreen = 1;
       }
-      else if (keypressIn < 450){          // Down --> Scroll Down in the List
+      else if (keypressIn < 450){          // Down -->   Scroll Down in the List
         if (currentfile == numberoffiles){
           currentfile = 1;
         }
@@ -87,37 +44,72 @@ void ProcessKeys(){                                                // LCD and Bu
         }
         refreshscreen = 1;
       }
-      else if (keypressIn < 650){          // Left --> Unmount the Disk Image
-        //MountedFile = 0;
-
-        switch (devicenumber_displayed){
-          case 4:
-            MountedFile4 = 0;
-            Serial.println("Unmounting D1");
-            break;
-          case 5:
-            MountedFile5 = 0;
-            Serial.println("Unmounting D2");
-            break;
-          case 6:
-            MountedFile6 = 0;
-            Serial.println("Unmounting D3");
-            break;
-          case 7:
-            MountedFile7 = 0;
-            Serial.println("Unmounting D4");
-            break;            
-        }
-        StatusSetup(0x43,devicenumber_displayed);                 // Set the status to "no disk"
-        loadedblock = -1;                  // No blocks loaded
+      else if (keypressIn < 650){          // Left -->   Unmount the Disk Image
+        MountedFile[devicenumber_displayed-4] = 0;
+        Serial.print("Unmounting D");
+        Serial.println(devicenumber_displayed - 3);
+        loadedblock[devicenumber_displayed-4] = -1;// We don't have a block loaded for the new file
+        StatusSetup(0x43,devicenumber_displayed); // Set the status to "no disk"
         refreshscreen = 1;
       }  
       else if (keypressIn < 850){          // Select --> Change the Displayed Device Number
-        if (devicenumber_displayed < NumberofDrives + 3){
-          devicenumber_displayed ++;
-        }
-        else {
-          devicenumber_displayed = 4;
+        switch(devicenumber_displayed){
+          case 4:
+            if(Device5){
+              devicenumber_displayed = 5;
+            }
+            else if(Device6){
+              devicenumber_displayed = 6;
+            }
+            else if(Device7){
+              devicenumber_displayed = 7;
+            }
+            else {
+              devicenumber_displayed = 4;
+            }
+            break;
+          case 5:
+            if(Device6){
+              devicenumber_displayed = 6;
+            }
+            else if(Device7){
+              devicenumber_displayed = 7;
+            }
+            else if(Device4){
+              devicenumber_displayed = 4;
+            }
+            else {
+              devicenumber_displayed = 5;
+            }
+            break;
+          case 6:
+            if(Device7){
+              devicenumber_displayed = 7;
+            }
+            else if(Device4){
+              devicenumber_displayed = 4;
+            }
+            else if(Device5){
+              devicenumber_displayed = 5;
+            }
+            else {
+              devicenumber_displayed = 6;
+            }
+            break;
+          case 7:
+            if(Device4){
+              devicenumber_displayed = 4;
+            }
+            else if(Device5){
+              devicenumber_displayed = 5;
+            }
+            else if(Device6){
+              devicenumber_displayed = 6;
+            }
+            else {
+              devicenumber_displayed = 7;
+            }
+            break;
         }
         EEPROM.write(0,devicenumber_displayed);
         refreshscreen = 1;
@@ -125,26 +117,13 @@ void ProcessKeys(){                                                // LCD and Bu
       if (refreshscreen == 1){
         lcd.clear();
         lcd.setCursor(0,0);
-        switch (devicenumber_displayed){
-          case 4:
-            lcd.print("D1:");
-            lcd.print(sdfiles[MountedFile4]);
-            break;
-          case 5:
-            lcd.print("D2:");
-            lcd.print(sdfiles[MountedFile5]);
-            break;
-          case 6:
-            lcd.print("D3:");
-            lcd.print(sdfiles[MountedFile6]);
-            break;
-          case 7:
-            lcd.print("D4:");
-            lcd.print(sdfiles[MountedFile7]);
-            break;
-        }
+        lcd.print("D");
+        lcd.print(devicenumber_displayed - 3);
+        lcd.print(":");
+        lcd.print(GetFileName(filesindex[MountedFile[devicenumber_displayed-4]]).substring(0,37));
+        LCDCurrentText = GetFileName(filesindex[currentfile]);
         lcd.setCursor(0,1);
-        lcd.print(sdfiles[currentfile]);
+        lcd.print(LCDCurrentText.substring(0,40));
         CurrentLCDDelay = LCDScrollDelayStart;
         LCDScrollLocation = 0;
         LastScrollLCD = millis();
