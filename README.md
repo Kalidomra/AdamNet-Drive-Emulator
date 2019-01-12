@@ -7,7 +7,7 @@ https://youtu.be/EGIlHEr0xxA
 
 Install the SD Card Library to your Arduino IDE: https://github.com/greiman/SdFat
 
-This is an Arduino Mega 2560 based SD card disk drive emulator. It supports 100 files and long file names (up to 40 characters are displayed).  The following materials are used:
+This is an Arduino Mega 2560 based SD card disk drive emulator. It supports 300 files and long file names (up to 40 characters are displayed).  The following materials are used:
 
  1. Arduino Mega 2560
  2. 1602 Keypad Shield - Arduino Version
@@ -25,4 +25,4 @@ How it is connected:
 
 How it works:
 
-Place up to 100 files in the root of a FAT32 SD card. These need to be in the DSK format commonly found on the web. On startup of the Arduino there is no mounted file. Scroll though the files using the up and down keys. Unmount or mount the currently selected file with the right key. Unmount with the left key. The currently mounted file for the drive is shown on the top row. The select key will change the current drive.
+Place up to 300 files in the root of a FAT32 SD card. These need to be in the DSK format commonly found on the web. On startup of the Arduino there is no mounted file. Scroll though the files using the up and down keys. Unmount or mount the currently selected file with the right key. Unmount with the left key. The currently mounted file for the drive is shown on the top row. The select key will change the current drive.
