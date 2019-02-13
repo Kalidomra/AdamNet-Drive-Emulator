@@ -1,0 +1,17 @@
+                              ADE Test Disk
+===============================================================================
+This disk contains a few basic programs for the ADE. It is meant as a proof of concept and a way to test the SD command functions of the ADE. It contains the following basic programs:
+===============================================================================
+LCD: Asks for 2 lines of text and then displays them on the ADE LCD. It uses the 0xF4 command. After the command to display the text on the LCD is complete, pressing the space bar will send the LCD refresh command. This will return the LCD to the regular ADE display.
+===============================================================================
+RUN: Lists the .DSK files on the SD card and ask for the index number to mount as D1. It will then reset the Adam to boot it. It uses the 0xF1 command to display the files and the 0xF3 command to mount.
+===============================================================================
+MOUNT: Asks for the drive # and file # to mount. It uses the 0xF3 command.
+===============================================================================
+UNMOUNT: Asks for the drive #. It then unmounts the disk in that drive. It uses the 0xF3 command with a 0 index number to unmount.
+===============================================================================
+STATUS: Displays the currently mounted disks on the ADE. It uses the 0xF2 command to retrieve and display the mounted file for each drive.
+===============================================================================
+FORMAT: A simple program to format the disk in D1 (Device 4). Used only as a test of the large block support. It will only write 0xe5 to the whole disk file, it doesn't do any initalizing. This can be used to format disk images if the regular 0XFACE command has been disabled. It uses the 0xFA command. Very large disk images (ie 4gb) can take days to format with this.
+===============================================================================
+MEM: Used to test large file support. Asks for the high byte of the block number. It will then write a 5 to the entire block, reads it back and display it. I used this as a method of testing the high block addressing. Be careful, if you input 0, it will write over the 0 block of the disk that is mounted in D1.
