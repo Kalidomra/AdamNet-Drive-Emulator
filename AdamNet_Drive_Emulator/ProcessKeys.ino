@@ -7,7 +7,7 @@ void ProcessKeys(){                                                // LCD and Bu
   byte SelectButton;
   if (ButtonDelay >= 150){                 // Only process the key inputs every 150 ms
     if (EnableAnalogButtons){
-      keypressIn = analogRead(0);            // Read Analog pin 0 (Takes 110 us)
+      keypressIn = analogRead(0);          // Read Analog pin 0 (Takes 110 us)
     }
     else {
       keypressIn = 5000;
@@ -26,24 +26,24 @@ void ProcessKeys(){                                                // LCD and Bu
       if (keypressIn < 50 || RightButton == LOW){       // Right -->  Mount or Unmount the Currently Selected Disk Image
             if (MountedFile[devicenumber_displayed-4] != 0){
               MountedFile[devicenumber_displayed-4] = 0;
-              Serial.print("Unmounting D");
+              Serial.print(F("Unmounting D"));
               Serial.println(devicenumber_displayed - 3);
-              StatusSetup(0x43,devicenumber_displayed);                 // Set the status to "no disk"
+              StatusSetup(0x43,devicenumber_displayed); // Set the status to "no disk"
             }
             else{
               MountedFile[devicenumber_displayed-4] = currentfile;
-              Serial.print("Mounting D");
+              Serial.print(F("Mounting D"));
               Serial.print(devicenumber_displayed - 3);
-              Serial.print(": ");
+              Serial.print(F(": "));
               Serial.println(GetFileName(filesindex[MountedFile[devicenumber_displayed-4]]));
-              loadedblock[devicenumber_displayed-4] = 0xFFFFFFFF;               // We don't have a block loaded for the new file
-              StatusSetup(0x40,devicenumber_displayed);                 // Set the status to 'disk in"
+              loadedblock[devicenumber_displayed-4] = 0xFFFFFFFF; // We don't have a block loaded for the new file
+              StatusSetup(0x40,devicenumber_displayed); // Set the status to 'disk in"
             }
-            EepromStringWrite((devicenumber_displayed * 100) + 2, GetFileName(filesindex[MountedFile[devicenumber_displayed-4]]));
+            EepromStringWrite((devicenumber_displayed * 300) + 2, GetFileName(filesindex[MountedFile[devicenumber_displayed-4]]));
             byte hiByte = highByte(MountedFile[devicenumber_displayed-4]);
             byte loByte = lowByte(MountedFile[devicenumber_displayed-4]);
-            EEPROM.write(devicenumber_displayed*100, hiByte);
-            EEPROM.write((devicenumber_displayed*100)+1, loByte);
+            EEPROM.write(devicenumber_displayed*300, hiByte);
+            EEPROM.write((devicenumber_displayed*300)+1, loByte);
             refreshscreen = 1;
       }  
       else if (keypressIn < 250 || UpButton == LOW){    // Up -->     Scroll Up in the List
@@ -66,7 +66,7 @@ void ProcessKeys(){                                                // LCD and Bu
       }
       else if (keypressIn < 650 || LeftButton == LOW){  // Left -->   Unmount the Disk Image
         MountedFile[devicenumber_displayed-4] = 0;
-        Serial.print("Unmounting D");
+        Serial.print(F("Unmounting D"));
         Serial.println(devicenumber_displayed - 3);
         loadedblock[devicenumber_displayed-4] = 0xFFFFFFFF;// We don't have a block loaded for the new file
         StatusSetup(0x43,devicenumber_displayed); // Set the status to "no disk"
@@ -131,15 +131,15 @@ void ProcessKeys(){                                                // LCD and Bu
             }
             break;
         }
-        EEPROM.write(0,devicenumber_displayed);
+        EEPROM.write(3,devicenumber_displayed);
         refreshscreen = 1;
       }
       if (refreshscreen == 1 && IncomingCommandFlag != 1){
         lcd.clear();
         lcd.setCursor(0,0);
-        lcd.print("D");
+        lcd.print(F("D"));
         lcd.print(devicenumber_displayed - 3);
-        lcd.print(":");
+        lcd.print(F(":"));
         lcd.print(GetFileName(filesindex[MountedFile[devicenumber_displayed-4]]).substring(0,37));
         LCDCurrentText = GetFileName(filesindex[currentfile]);
         lcd.setCursor(0,1);

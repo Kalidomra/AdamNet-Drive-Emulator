@@ -4,7 +4,7 @@ void SDCardSetup(){                                                // Setup the 
   if (!sd.begin(chipSelect, SD_SCK_MHZ(50))) {// Initialize at the highest speed supported by the board that is not over 50 MHz. Try a lower speed if SPI errors occur.
     lcd.clear();
     lcd.setCursor(0,0);
-    lcd.print("   No SD Card");
+    lcd.print(F("   No SD Card"));
     sd.initErrorHalt();
   }
   while (numberoffiles < maxfiles && file.openNext(sd.vwd(), O_READ)) {
@@ -25,20 +25,20 @@ void SDCardSetup(){                                                // Setup the 
         }
         if (testextension == ".dsk"){
           typeindex[numberoffiles] = 0;
-          Serial.print("DSK:");
+          Serial.print(F("DSK:"));
         }
         if (testextension == ".ddp"){
           typeindex[numberoffiles] = 1;
-          Serial.print("DDP:");
+          Serial.print(F("DDP:"));
         }
         Serial.print(numberoffiles);
-        Serial.print(":");
+        Serial.print(F(":"));
         Serial.print(filesindex[numberoffiles]);
-        Serial.print(": ");
+        Serial.print(F(": "));
         Serial.print(testfilename.substring(0,namelength));
         Serial.println();
       }
     }
-  file.close();  
+  file.close();
   }
 }

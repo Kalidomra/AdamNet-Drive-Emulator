@@ -1,11 +1,11 @@
-int SaveBlock(unsigned long blocknumber, byte devicenumber){                // Save the buffer array to the SD card
+int SaveBlock(unsigned long blocknumber, byte devicenumber){       // Save the buffer array to the SD card
   digitalWrite(statusled[devicenumber-4],HIGH);// Turn on the status LED
   int remainder = blocknumber % 4;
   file.open(sd.vwd(),filesindex[MountedFile[devicenumber-4]], O_READ | O_WRITE);
   unsigned long sizeoffile = file.fileSize();
-  Serial.print("D");
+  Serial.print(F("D"));
   Serial.print(devicenumber - 3);
-  Serial.print(": Writing: ");
+  Serial.print(F(": Writing: "));
   Serial.println(blocknumber);
   unsigned long blocklocation = blocknumber*0x00000400;
   if (blocklocation < sizeoffile){
@@ -39,12 +39,12 @@ int SaveBlock(unsigned long blocknumber, byte devicenumber){                // S
   else{
     Serial.print("D");
     Serial.print(devicenumber-3);
-    Serial.print(": Error saving block - Block location: ");
-    Serial.print(blocknumber);
-    Serial.print(" is larger than file: ");
+    Serial.print(F(": Error saving block - Block location: "));
+    Serial.print(blocklocation);
+    Serial.print(F(" is larger than file: "));
     Serial.println(sizeoffile);
     file.close();
-    StatusSetup(0x42, devicenumber);              // Set status to no block
+    StatusSetup(0x42, devicenumber);       // Set status to no block
     return 2;
   }
 }
