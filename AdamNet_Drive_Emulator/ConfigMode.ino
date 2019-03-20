@@ -1,5 +1,6 @@
 void ConfigMode(){                                                 // Configuration Mode
   byte LCDRefresh = 1;
+  int keypressIn  = 1000;
   const String RootMenu[5] = {"Exit","D1: ","D2: ","D3: ","D4: "};
   byte MenuItem = 1;
   Device4 = false;
@@ -22,12 +23,8 @@ void ConfigMode(){                                                 // Configurat
   while(1){
     if (EnableAnalogButtons){
       keypressIn = analogRead(0);
-    }
-    else {
-      keypressIn = 5000;
-    }
-    
-    if (keypressIn < 50 || digitalRead(RightButtonPin) == LOW){
+    }    
+    if (keypressIn < AnalogTriggerRight || digitalRead(RightButtonPin) == LOW){
       if (MenuItem == 1){
         if(Device4 == true){
           Device4 = false;
@@ -73,7 +70,7 @@ void ConfigMode(){                                                 // Configurat
       }
       LCDRefresh = 1;
     }
-    else if (keypressIn < 250 || digitalRead(UpButtonPin) == LOW){
+    else if (keypressIn < AnalogTriggerUp || digitalRead(UpButtonPin) == LOW){
       if (MenuItem == 4){
         MenuItem = 0;
       }
@@ -82,7 +79,7 @@ void ConfigMode(){                                                 // Configurat
       }
       LCDRefresh = 1;
     }
-    else if (keypressIn < 450 || digitalRead(DownButtonPin) == LOW){
+    else if (keypressIn < AnalogTriggerDown || digitalRead(DownButtonPin) == LOW){
       if (MenuItem == 0){
         MenuItem = 4;
       }
@@ -130,7 +127,7 @@ void ConfigMode(){                                                 // Configurat
         }
       }
       LCDRefresh = 0;
-      delay(500);
+      delay(200);
     }
   }
 }

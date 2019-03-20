@@ -5,12 +5,10 @@ void ProcessKeys(){                                                // LCD and Bu
   byte DownButton;
   byte LeftButton;
   byte SelectButton;
-  if (ButtonDelay >= 150){                 // Only process the key inputs every 150 ms
+  int keypressIn  = 1000;
+  if (ButtonDelay >= ProcessKeysDelay){    // Only process the key inputs every so often.
     if (EnableAnalogButtons){
       keypressIn = analogRead(0);          // Read Analog pin 0 (Takes 110 us)
-    }
-    else {
-      keypressIn = 5000;
     }
     if (IncomingCommandFlag == 0){         // Make sure we are not doing LCD stuff while Command is waiting
       RightButton = digitalRead(RightButtonPin);
@@ -23,7 +21,7 @@ void ProcessKeys(){                                                // LCD and Bu
       if (IncomingCommandFlag == 1){return;}
       SelectButton = digitalRead(SelectButtonPin);
       if (IncomingCommandFlag == 1){return;}
-      if (keypressIn < 50 || RightButton == LOW){       // Right -->  Mount or Unmount the Currently Selected Disk Image
+      if (keypressIn < AnalogTriggerRight || RightButton == LOW){       // Right -->  Mount or Unmount the Currently Selected Disk Image
             if (MountedFile[devicenumber_displayed-4] != 0){
               MountedFile[devicenumber_displayed-4] = 0;
               Serial.print(F("Unmounting D"));
@@ -46,7 +44,7 @@ void ProcessKeys(){                                                // LCD and Bu
             EEPROM.write((devicenumber_displayed*300)+1, loByte);
             refreshscreen = 1;
       }  
-      else if (keypressIn < 250 || UpButton == LOW){    // Up -->     Scroll Up in the List
+      else if (keypressIn < AnalogTriggerUp || UpButton == LOW){    // Up -->     Scroll Up in the List
         if (currentfile == 1){
           currentfile = numberoffiles;
         }
@@ -55,7 +53,7 @@ void ProcessKeys(){                                                // LCD and Bu
         }
         refreshscreen = 1;
       }
-      else if (keypressIn < 450 || DownButton == LOW){  // Down -->   Scroll Down in the List
+      else if (keypressIn < AnalogTriggerDown || DownButton == LOW){  // Down -->   Scroll Down in the List
         if (currentfile == numberoffiles){
           currentfile = 1;
         }
@@ -64,7 +62,7 @@ void ProcessKeys(){                                                // LCD and Bu
         }
         refreshscreen = 1;
       }
-      else if (keypressIn < 650 || LeftButton == LOW){  // Left -->   Unmount the Disk Image
+      else if (keypressIn < AnalogTriggerLeft || LeftButton == LOW){  // Left -->   Unmount the Disk Image
         MountedFile[devicenumber_displayed-4] = 0;
         Serial.print(F("Unmounting D"));
         Serial.println(devicenumber_displayed - 3);
@@ -72,7 +70,7 @@ void ProcessKeys(){                                                // LCD and Bu
         StatusSetup(0x43,devicenumber_displayed); // Set the status to "no disk"
         refreshscreen = 1;
       }  
-      else if (keypressIn < 850 || SelectButton == LOW){// Select --> Change the Displayed Device Number
+      else if (keypressIn < AnalogTriggerSelect || SelectButton == LOW){// Select --> Change the Displayed Device Number
         switch(devicenumber_displayed){
           case 4:
             if(Device5){

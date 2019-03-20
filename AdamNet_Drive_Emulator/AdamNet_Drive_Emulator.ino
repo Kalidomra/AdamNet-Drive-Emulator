@@ -4,7 +4,7 @@
 #include <EEPROM.h>
 #include <SdFat.h>
 //============================================================================================================================================
-//==================================             AdamNet Drive Emulator (ADE)   v0.5         =================================================
+//==================================             AdamNet Drive Emulator (ADE)   v0.60         ================================================
 //============================================================================================================================================
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓   Only modify the following variables   ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
@@ -14,6 +14,9 @@ const unsigned int namelength = 100;       // Length of file name to display. 16
 const byte statusled[4] = {13,13,13,13};   // Pins for status LED. These can be combined or 1 for each device. 13 is the internal LED on the Mega
 const String BootDisk = "boot.dsk";        // Name of disk to auto-mount on D1. This will override the eeprom file. Set to "" for no boot disk
 const byte EnableAnalogButtons = true;     // For the 1602 Keypad Shield Buttons, leave this as 'true'. If you are using individual digital buttons set it to 'false'.
+const byte AnalogButtonSensitivity = 100;  // This will change the analog button sensitivity. This is a percentage of the default values.
+const unsigned int LCDScrollDelay = 300;   // How many milliseconds between scrolls
+const unsigned int LCDScrollDelayStart = 2000;// Scroll delay when the LCD gets to the start
 const byte EnableFACE = true;              // Do we want the FACE command to work. This will cause problems with disk images greater than 64,205 (0xFACD) blocks
                                            // FACE is the format command. If you write to block 0x0000FACE then the whole disk is erased.
                                            // Setting this to false will disable the FACE command and treat 0x0000FACE as a normal block
@@ -34,8 +37,6 @@ const byte DownButtonPin = 24;             // Pin for optional digital button.
 const byte LeftButtonPin = 26;             // Pin for optional digital button.
 const byte SelectButtonPin = 22;           // Pin for optional digital button.
 const byte interleave = 5;                 // This is the interleave used for the disk image file layout. Not sure if changing it will actually work.
-const unsigned int LCDScrollDelay = 300;   // How many milliseconds between scrolls
-const unsigned int LCDScrollDelayStart = 2000;// Scroll delay when the LCD gets to the start
 unsigned int CurrentLCDDelay = LCDScrollDelay;// The current LCD scroll delay
 byte Device4;                              // Enable for Device 4
 byte Device5;                              // Enable for Device 5
@@ -64,10 +65,15 @@ String LCDCurrentText;                     // Current Text on the bottom line of
 byte LCDScrollOn = true;                   // Turn off the scroll in the program. Used when writing to LCD. Turned back on with refreshscreen.
 unsigned int LCDScrollLocation = 0;        // Current location for scrolling the LCD
 byte refreshscreen = 1;                    // Flag to refresh the LCD
-int keypressIn  = 0;                       // Value for the analog keypress
 byte IncomingCommand = 0x00;               // Incoming command from AdamNet
 byte IncomingCommandFlag = 0;              // Flag for the main loop to process an incoming command
 byte DisableNextReset = false;             // When set to true the next reset will not reset the devices.
+byte ProcessKeysDelay = 150;               // How long to wait before processing the next keypress.
+int AnalogTriggerRight = 50.0*(AnalogButtonSensitivity/100.0);
+int AnalogTriggerUp = 250.0*(AnalogButtonSensitivity/100.0);
+int AnalogTriggerDown = 450.0*(AnalogButtonSensitivity/100.0);
+int AnalogTriggerLeft = 650.0*(AnalogButtonSensitivity/100.0);
+int AnalogTriggerSelect = 850.0*(AnalogButtonSensitivity/100.0);
 SdFat sd;                                  // Setup SD Card
 SdFile file;                               // Setup SD Card
 void setup(){
@@ -75,10 +81,14 @@ void setup(){
   lcd.begin(16, 2);                        // Start the LCD screen
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print(F("ADE"));
+  lcd.print(F("ADE        v0.60"));
   lcd.setCursor(0,1);  
   lcd.print(F("by: Sean Myers"));
   delay(2000);
+  Serial.println(F("Starting: ADE v0.60"));
+  if (!EnableAnalogButtons){               // If the analog buttons are turned off then we have a different value
+    ProcessKeysDelay = 120;
+  }
   for(int t=0; t<=3;t++){
     pinMode(statusled[t],OUTPUT);          // Set the status LED's as output
     digitalWrite(statusled[t],LOW);        // Turn off the status LED  
@@ -88,17 +98,20 @@ void setup(){
   pinMode(DownButtonPin,INPUT_PULLUP);     // Set the DownButtonPin to Input Pullup
   pinMode(LeftButtonPin,INPUT_PULLUP);     // Set the LeftButtonPin to Input Pullup
   pinMode(SelectButtonPin,INPUT_PULLUP);   // Set the SelectButtonPin to Input Pullup
-  if (digitalRead(UpButtonPin) == LOW || (analogRead(0) < 250)){
+  int InitReadKeys= 1000;
+  if (EnableAnalogButtons){
+    InitReadKeys = analogRead(0);
   }
-  if (digitalRead(SelectButtonPin) == LOW || (analogRead(0) < 850 && analogRead(0) > 650)){
+  if (digitalRead(UpButtonPin) == LOW || (InitReadKeys < AnalogTriggerUp)){
+  }
+  if (digitalRead(SelectButtonPin) == LOW || (InitReadKeys < AnalogTriggerSelect && InitReadKeys > AnalogTriggerLeft)){
     Serial.println(F("Entering Configuration Mode"));
     ConfigMode();
   }
-  if (digitalRead(RightButtonPin) == LOW || analogRead(0) < 50){
+  if (digitalRead(RightButtonPin) == LOW || InitReadKeys < AnalogTriggerRight){
     Serial.println(F("Entering Voltage Test Mode"));
     VoltageRead();
   }
-  Serial.println(F("Starting up..."));
   SDCardSetup();                           // Initialize the SD card and load the root directory
   DeviceSetup();                           // Initialize the Device and Device Display
   Serial.print(F("Free SRAM: "));          // Print the amount of Free SRAM
