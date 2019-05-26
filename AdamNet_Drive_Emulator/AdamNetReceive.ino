@@ -5,11 +5,11 @@ int AdamNetReceive(byte arraytoreceive[], int lengthofarray){      // Receive ar
 // ===============  Wait for Start bit ===============
     while ((PIND & _BV(PD2)) == 0){        // Wait for PD2 to go HIGH
     }
-    _delay_us(8);                          // Wait to get to the center, We are now at the center of the start bit
+    _delay_us(8);                          // Wait to get to the center, Now at the center of the start bit
     __asm__("nop\n\t");
 // ===============  Loop Through and read the bits =============== 
     for (byte i=8; i > 0; --i){
-      incomingbyte >>= 1;                  // Shift the bits over to the right. This means the first bit we read will end up at the far right
+      incomingbyte >>= 1;                  // Shift the bits over to the right. This means the first bit will end up at the far right
       _delay_us(15);                       // Wait one bit width
       __asm__("nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
       if ((PIND & _BV(PD2))== 0){          // If PD2 is LOW then this is a "1" bit

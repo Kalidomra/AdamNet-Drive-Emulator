@@ -4,7 +4,7 @@ void DeviceSetup(){                                                // Initialize
   Device5 = false;
   Device6 = false;
   Device7 = false;
-  if (EEPROM.read(0) == 65 && EEPROM.read(1) == 68 && EEPROM.read(2) == 69){    // Check if the eeprom has been initialized
+  if (EEPROM.read(0) == 65 && EEPROM.read(1) == 68 && EEPROM.read(2) == 69){ // Check if the eeprom has been initialized
    if (EEPROM.read(4) == 1){
       Device4 = true;
       numberofdrives++;
@@ -46,39 +46,39 @@ void DeviceSetup(){                                                // Initialize
     lcd.print(F("Enabled"));
     while(1){}                             // Program will die here. Re-run config mode and turn on a drive.
   }
-  devicenumber_displayed = EEPROM.read(3); // Load in the last device we were displaying
-  if ((devicenumber_displayed == 4) && !Device4){ //Make sure it is still available, if not make it 0
-    devicenumber_displayed = 0;
+  DeviceDisplayed = EEPROM.read(3); // Load in the last device that was displayed
+  if ((DeviceDisplayed == 4) && !Device4){ //Make sure it is still available, if not make it 0
+    DeviceDisplayed = 0;
   }
-  if ((devicenumber_displayed == 5) && !Device5){
-    devicenumber_displayed = 0;
+  if ((DeviceDisplayed == 5) && !Device5){
+    DeviceDisplayed = 0;
   }
-  if ((devicenumber_displayed == 6) && !Device6){
-    devicenumber_displayed = 0;
+  if ((DeviceDisplayed == 6) && !Device6){
+    DeviceDisplayed = 0;
   }
-  if ((devicenumber_displayed == 7) && !Device7){
-    devicenumber_displayed = 0;
+  if ((DeviceDisplayed == 7) && !Device7){
+    DeviceDisplayed = 0;
   }
-  if ((devicenumber_displayed < 4) || (devicenumber_displayed > 7)){ // If the device is outside the correct numbers then re-assign to the lowest available device.
+  if ((DeviceDisplayed < 4) || (DeviceDisplayed > 7)){ // If the device is outside the correct numbers then re-assign to the lowest available device.
       if (Device4){
-        devicenumber_displayed = 4; 
+        DeviceDisplayed = 4; 
       }
       else if (Device5){
-        devicenumber_displayed = 5; 
+        DeviceDisplayed = 5; 
       }
       else if (Device6){
-        devicenumber_displayed = 6; 
+        DeviceDisplayed = 6; 
       }
       else if (Device7){
-        devicenumber_displayed = 7; 
+        DeviceDisplayed = 7; 
       }
   }
   if (Device4){
-    if (bootdiskindex != 0){               // Do we have a boot disk to mount?
-      MountedFile[0] = bootdiskindex;
+    if (BootDiskIndex != 0){               // If there is a boot disk then mount it.
+      MountedFile[0] = BootDiskIndex;
       Serial.print(F("D1: <boot>: "));
       Serial.println(BootDisk);
-      StatusSetup(0x40, 4);                // Set the status to "disk in"
+      StatusSetup(0x40, 4);                // Set the Status to "disk in"
       refreshscreen = 1;
     }
     else{
@@ -101,7 +101,7 @@ void DeviceSetupCommand(byte devicenumber){
   byte lowByte =  EEPROM.read((devicenumber*300) + 1);
   MountedFile[devicenumber-4] =  word(hiByte, lowByte);
   eepromfilename = EepromStringRead((devicenumber *300) + 2);
-  if (MountedFile[devicenumber-4] > maxfiles || eepromfilename != GetFileName(filesindex[MountedFile[devicenumber-4]])){
+  if (MountedFile[devicenumber-4] > MaxFiles || eepromfilename != GetFileName(FilesIndex[MountedFile[devicenumber-4]])){
     MountedFile[devicenumber-4] = 0;
   }
   else if (MountedFile[devicenumber-4] != 0){
@@ -117,6 +117,6 @@ void DeviceSetupCommand(byte devicenumber){
     Serial.println(F(": < No Disk >"));
   }
   else{
-    StatusSetup(0x40, devicenumber);       // Set the status to "disk in"
+    StatusSetup(0x40, devicenumber);       // Set the Status to "disk in"
   }
 }

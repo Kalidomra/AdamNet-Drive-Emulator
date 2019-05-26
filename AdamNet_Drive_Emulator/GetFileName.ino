@@ -1,5 +1,5 @@
 String GetFileName(unsigned int IncomingFileIndex){                // Get the FileName from Index Number
-  char incomingfilename[namelength];
+  char incomingfilename[NameLength];
   byte error = 0;
   String testfilename ="";
   if (IncomingFileIndex == 0){
@@ -19,7 +19,7 @@ do {
   }
   testfilename = String(incomingfilename);
   testfilename.trim();
-  testfilename = testfilename.substring(0,namelength);  // Trim to the size of the maximum global namelength
+  testfilename = testfilename.substring(0,NameLength);  // Trim to the size of the maximum global NameLength
   if (error > 10){
     testfilename = "SD Card Error";
     break;

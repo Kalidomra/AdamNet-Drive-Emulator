@@ -6,149 +6,160 @@ void ProcessKeys(){                                                // LCD and Bu
   byte LeftButton;
   byte SelectButton;
   int keypressIn  = 1000;
+  String LCDTemp = "";
   if (ButtonDelay >= ProcessKeysDelay){    // Only process the key inputs every so often.
     if (EnableAnalogButtons){
       keypressIn = analogRead(0);          // Read Analog pin 0 (Takes 110 us)
     }
-    if (IncomingCommandFlag == 0){         // Make sure we are not doing LCD stuff while Command is waiting
-      RightButton = digitalRead(RightButtonPin);
-      if (IncomingCommandFlag == 1){return;} 
-      UpButton = digitalRead(UpButtonPin);
-      if (IncomingCommandFlag == 1){return;}
-      DownButton = digitalRead(DownButtonPin);
-      if (IncomingCommandFlag == 1){return;}
-      LeftButton = digitalRead(LeftButtonPin);
-      if (IncomingCommandFlag == 1){return;}
-      SelectButton = digitalRead(SelectButtonPin);
-      if (IncomingCommandFlag == 1){return;}
-      if (keypressIn < AnalogTriggerRight || RightButton == LOW){       // Right -->  Mount or Unmount the Currently Selected Disk Image
-            if (MountedFile[devicenumber_displayed-4] != 0){
-              MountedFile[devicenumber_displayed-4] = 0;
-              Serial.print(F("Unmounting D"));
-              Serial.println(devicenumber_displayed - 3);
-              StatusSetup(0x43,devicenumber_displayed); // Set the status to "no disk"
-            }
-            else{
-              MountedFile[devicenumber_displayed-4] = currentfile;
-              Serial.print(F("Mounting D"));
-              Serial.print(devicenumber_displayed - 3);
-              Serial.print(F(": "));
-              Serial.println(GetFileName(filesindex[MountedFile[devicenumber_displayed-4]]));
-              loadedblock[devicenumber_displayed-4] = 0xFFFFFFFF; // We don't have a block loaded for the new file
-              StatusSetup(0x40,devicenumber_displayed); // Set the status to 'disk in"
-            }
-            EepromStringWrite((devicenumber_displayed * 300) + 2, GetFileName(filesindex[MountedFile[devicenumber_displayed-4]]));
-            byte hiByte = highByte(MountedFile[devicenumber_displayed-4]);
-            byte loByte = lowByte(MountedFile[devicenumber_displayed-4]);
-            EEPROM.write(devicenumber_displayed*300, hiByte);
-            EEPROM.write((devicenumber_displayed*300)+1, loByte);
-            refreshscreen = 1;
-      }  
-      else if (keypressIn < AnalogTriggerUp || UpButton == LOW){    // Up -->     Scroll Up in the List
-        if (currentfile == 1){
-          currentfile = numberoffiles;
-        }
-        else {
-          currentfile--;
-        }
-        refreshscreen = 1;
-      }
-      else if (keypressIn < AnalogTriggerDown || DownButton == LOW){  // Down -->   Scroll Down in the List
-        if (currentfile == numberoffiles){
-          currentfile = 1;
-        }
-        else {
-          currentfile++;
-        }
-        refreshscreen = 1;
-      }
-      else if (keypressIn < AnalogTriggerLeft || LeftButton == LOW){  // Left -->   Unmount the Disk Image
-        MountedFile[devicenumber_displayed-4] = 0;
+    RightButton = digitalRead(RightButtonPin);
+    UpButton = digitalRead(UpButtonPin);
+    DownButton = digitalRead(DownButtonPin);
+    LeftButton = digitalRead(LeftButtonPin);
+    SelectButton = digitalRead(SelectButtonPin);
+    if (keypressIn < AnalogTriggerRight || RightButton == LOW){   // Right -->  Mount or Unmount the Currently Selected Disk Image
+      if (MountedFile[DeviceDisplayed-4] != 0){
+        MountedFile[DeviceDisplayed-4] = 0;
         Serial.print(F("Unmounting D"));
-        Serial.println(devicenumber_displayed - 3);
-        loadedblock[devicenumber_displayed-4] = 0xFFFFFFFF;// We don't have a block loaded for the new file
-        StatusSetup(0x43,devicenumber_displayed); // Set the status to "no disk"
-        refreshscreen = 1;
-      }  
-      else if (keypressIn < AnalogTriggerSelect || SelectButton == LOW){// Select --> Change the Displayed Device Number
-        switch(devicenumber_displayed){
-          case 4:
-            if(Device5){
-              devicenumber_displayed = 5;
-            }
-            else if(Device6){
-              devicenumber_displayed = 6;
-            }
-            else if(Device7){
-              devicenumber_displayed = 7;
-            }
-            else {
-              devicenumber_displayed = 4;
-            }
-            break;
-          case 5:
-            if(Device6){
-              devicenumber_displayed = 6;
-            }
-            else if(Device7){
-              devicenumber_displayed = 7;
-            }
-            else if(Device4){
-              devicenumber_displayed = 4;
-            }
-            else {
-              devicenumber_displayed = 5;
-            }
-            break;
-          case 6:
-            if(Device7){
-              devicenumber_displayed = 7;
-            }
-            else if(Device4){
-              devicenumber_displayed = 4;
-            }
-            else if(Device5){
-              devicenumber_displayed = 5;
-            }
-            else {
-              devicenumber_displayed = 6;
-            }
-            break;
-          case 7:
-            if(Device4){
-              devicenumber_displayed = 4;
-            }
-            else if(Device5){
-              devicenumber_displayed = 5;
-            }
-            else if(Device6){
-              devicenumber_displayed = 6;
-            }
-            else {
-              devicenumber_displayed = 7;
-            }
-            break;
-        }
-        EEPROM.write(3,devicenumber_displayed);
-        refreshscreen = 1;
+        Serial.println(DeviceDisplayed - 3);
+        StatusSetup(0x43,DeviceDisplayed); // Set the Status to "no disk"
       }
-      if (refreshscreen == 1 && IncomingCommandFlag != 1){
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print(F("D"));
-        lcd.print(devicenumber_displayed - 3);
-        lcd.print(F(":"));
-        lcd.print(GetFileName(filesindex[MountedFile[devicenumber_displayed-4]]).substring(0,37));
-        LCDCurrentText = GetFileName(filesindex[currentfile]);
-        lcd.setCursor(0,1);
-        lcd.print(LCDCurrentText.substring(0,40));
-        CurrentLCDDelay = LCDScrollDelayStart;
-        LCDScrollLocation = 0;
-        LastScrollLCD = millis();
-        refreshscreen = 0;
-        LCDScrollOn = true;
+      else{
+        MountedFile[DeviceDisplayed-4] = CurrentFile;
+        Serial.print(F("Mounting D"));
+        Serial.print(DeviceDisplayed - 3);
+        Serial.print(F(": "));
+        Serial.println(GetFileName(FilesIndex[MountedFile[DeviceDisplayed-4]]));
+        LoadedBlock[DeviceDisplayed-4] = 0xFFFFFFFF; // Reset the loaded block for the new file
+        StatusSetup(0x40,DeviceDisplayed); // Set the Status to 'disk in"
       }
-      LastButtonTime = millis();           // Reset the button press timer
+      EepromStringWrite((DeviceDisplayed * 300) + 2, GetFileName(FilesIndex[MountedFile[DeviceDisplayed-4]]));
+      byte hiByte = highByte(MountedFile[DeviceDisplayed-4]);
+      byte loByte = lowByte(MountedFile[DeviceDisplayed-4]);
+      EEPROM.write(DeviceDisplayed*300, hiByte);
+      EEPROM.write((DeviceDisplayed*300)+1, loByte);
+      refreshscreen = 1;
     }
+    else if (keypressIn < AnalogTriggerUp || UpButton == LOW){    // Up -->     Scroll Up in the List
+      if (CurrentFile == 1){
+        CurrentFile = NumberofFiles;
+      }
+      else {
+        CurrentFile--;
+      }
+      refreshscreen = 1;
+    }
+    else if (keypressIn < AnalogTriggerDown || DownButton == LOW){// Down -->   Scroll Down in the List
+      if (CurrentFile == NumberofFiles){
+        CurrentFile = 1;
+      }
+      else {
+        CurrentFile++;
+      }
+      refreshscreen = 1;
+    }
+    else if (keypressIn < AnalogTriggerLeft || LeftButton == LOW){// Left -->   Unmount the Disk Image
+      MountedFile[DeviceDisplayed-4] = 0;
+      Serial.print(F("Unmounting D"));
+      Serial.println(DeviceDisplayed - 3);
+      LoadedBlock[DeviceDisplayed-4] = 0xFFFFFFFF;// Reset the loaded block for the new file
+      StatusSetup(0x43,DeviceDisplayed);   // Set the Status to "no disk"
+      refreshscreen = 1;
+    }  
+    else if (keypressIn < AnalogTriggerSelect || SelectButton == LOW){// Select --> Change the Displayed Device Number
+      switch(DeviceDisplayed){
+        case 4:
+          if(Device5){
+            DeviceDisplayed = 5;
+          }
+          else if(Device6){
+            DeviceDisplayed = 6;
+          }
+          else if(Device7){
+            DeviceDisplayed = 7;
+          }
+          else {
+            DeviceDisplayed = 4;
+          }
+          break;
+        case 5:
+          if(Device6){
+            DeviceDisplayed = 6;
+          }
+          else if(Device7){
+            DeviceDisplayed = 7;
+          }
+          else if(Device4){
+            DeviceDisplayed = 4;
+          }
+          else {
+            DeviceDisplayed = 5;
+          }
+          break;
+        case 6:
+          if(Device7){
+            DeviceDisplayed = 7;
+          }
+          else if(Device4){
+            DeviceDisplayed = 4;
+          }
+          else if(Device5){
+            DeviceDisplayed = 5;
+          }
+          else {
+            DeviceDisplayed = 6;
+          }
+          break;
+        case 7:
+          if(Device4){
+            DeviceDisplayed = 4;
+          }
+          else if(Device5){
+            DeviceDisplayed = 5;
+          }
+          else if(Device6){
+            DeviceDisplayed = 6;
+          }
+          else {
+            DeviceDisplayed = 7;
+          }
+          break;
+      }
+      EEPROM.write(3,DeviceDisplayed);
+      refreshscreen = 1;
+    }
+    if (refreshscreen == 1){
+      lcd.setCursor(0,0);
+      lcd.print(F("D"));
+      lcd.print(DeviceDisplayed - 3);
+      lcd.print(F(":"));
+      LCDTemp = GetFileName(FilesIndex[MountedFile[DeviceDisplayed-4]]).substring(0,13);
+      byte LCDLength = LCDTemp.length();     
+      for (int i = 0; i <= LCDLength; i++) {
+        String topline = LCDTemp.substring(i,i+1);
+        lcd.print(topline);
+      }
+      for (int i = LCDLength; i <= 12; i++) {
+        lcd.print(" ");
+      }
+      LCDCurrentText = GetFileName(FilesIndex[CurrentFile]);
+      lcd.setCursor(0,1);
+      LCDLength = LCDCurrentText.length();
+      if (LCDLength > 16){
+        LCDLength = 16;
+      }
+      for (int i = 0; i < LCDLength; i++) {
+        String bottomline = LCDCurrentText.substring(i,i+1);
+        lcd.print(bottomline);
+      }
+      for (int i = LCDLength; i <= 16; i++) {
+        lcd.print(" ");
+      }
+      CurrentLCDDelay = LCDScrollDelayStart;
+      LCDScrollLocation = 0;
+      LastScrollLCD = millis();
+      refreshscreen = 0;
+      LCDScrollOn = true;
+    }
+    LastButtonTime = millis();             // Reset the button press timer
   }
 }

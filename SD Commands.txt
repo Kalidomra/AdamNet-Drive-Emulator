@@ -1,4 +1,4 @@
-                            SD Commands (v0.5)
+                            SD Commands (v0.7)
 ===============================================================================
 
 First some background....
@@ -18,7 +18,18 @@ The ADE can run in two different modes:
 
 The first is "Compatible Block Mode". In this mode the ADE will only respond to block requests on the lower word (first 2 bytes). This is required due to some Adam programs that do not set the upper word to zero prior to a read or write. This is not a problem for a regular disk or tape drive, as these bytes are ignored. This is the default mode for the ADE.
 
-The second mode is "Enhanced Block Mode". In this mode the ADE will process the full 4 bytes of block address. This mode is required for disk images larger than 64 MB and to execute SD commands. To switch to this mode, send a read command to the block address DEADBEEF. The ADE will switch to Enhanced Block Mode until a reset on the AdamNet or ADE reset.
+The second mode is "Enhanced Block Mode". In this mode the ADE will process the full 4 bytes of block address. This mode is required for disk images larger than 64 MB and to execute SD commands. To switch to this mode, send a read command to the block address DEADBEEF. The ADE will switch to Enhanced Block Mode until a reset on the AdamNet or ADE reset. Reading the DEADBEEF block will also transmit the status of the ADE. This is a read only block. Sending a write to this block will have no effect on the data. The beginning of the block will contain the following information:
+    
+Byte Number:             Data:
+    0                    65 (41 HEX, Ascii A)
+    1                    68 (44 HEX, Ascii D)
+    2                    69 (45 HEX, Ascii E)
+    3                    Display Device Number (ie: 4 for Drive 1)
+    4                    Device 4 Enable (1=Enabled, 0=Disabled)
+    5                    Device 5 Enable (1=Enabled, 0=Disabled)
+    6                    Device 6 Enable (1=Enabled, 0=Disabled)
+    7                    Device 7 Enable (1=Enabled, 0=Disabled)
+    8,9,10               Version Number (ie: 0 7 0 = V0.70)
 
 ===============================================================================
 
@@ -43,9 +54,9 @@ In order to execute SD commands, the ADE MUST be in Enhanced Block mode. The com
     A file number of 0 will unmount the current disk.
 ===============================================================================
 0xF4 - Write to LCD
-    BB = not used, CC = not used, DD = Refresh
+    BB = Refresh, CC = not used, DD = Refresh
     This command is used as a write address. The Adam would write to address F4000000. The block that is written will contain the ascii encoded text for the LCD. First 16 bytes are the top line, second 16 bytes are the bottom line. It will stay on the LCD until a button is pressed or a refresh command is sent.
-    Setting DD to 1 will refresh the LCD back to the normal ADE display. It will ignore the write.
+    Setting BB or DD to 1 will refresh the LCD back to the normal ADE display. It will ignore the write. The best method is to use BB.
 ===============================================================================
 0xFA - Format Disk
     BB = not used, CC = not used , DD = not used

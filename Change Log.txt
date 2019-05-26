@@ -1,0 +1,48 @@
+Version 0.7
+- Moved the time critical AdamNet send and receive functions to the CommandInterrupt function. This ensures that data is being sent to the Adam with the correct timing and not being delayed due to LCD writes or button processing. This fixes the I/O errors in some titles and also prevents errors from buttons being pressed while blocks are loading. This is a major re-write of how the ADE interacts on the AdamNet.
+- Added the ability to detect the type of reset. A "hard" reset is from physically activating the reset switch on the Adam or truning it off and on. A "soft" reset is initiated by the Adam software. Only a "hard" reset will cause the book.dsk to be re-mounted. This fixes the issue with some games calling a software reset during loading.
+- Removed the "Disable Next Reset" option from the SD Command "0xF3 - Mount/Unmount Disk". This is no longer required now that the ADE can detect the type of reset.
+- The filename for the boot disk is no longer case sensitive. "Boot.DSK" will work even if the file is really called "boot.dsk"
+- Added status information to the block that is transmitted when the DEADBEEF block read is sent. See the SD Commands text file for the format. The basic program INIT on the ADE Test disk image will demonstrate this read.
+- Re-wrote most of the LCD scroll and LCD refresh functions. They are more efficient now.
+- In the SD command 0xF4, added the ability to initiate an LCD refresh with the high word only. This will prevent any Adam Image manager from initiating a write to an actual Adam disk drive.
+
+Version 0.6
+- Fixed bug in entering config mode. If using the digital buttons, ADE would sometimes go into config mode with no button pressed.
+- Added separate button delay timing for analog buttons and digital buttons.
+- Added a variable to set the sensitivity of the analog read.
+
+Version 0.5
+- Changed how the AdamNet line is connected; it now requires a PNP transistor and 2 resistors. This version is not compatible with the old method of connecting the AdamNet line to the Mega2560. This was required to improve the reliability of the AdamNet communication.
+- Added the device configuration mode. Enables any drive to be turned on or off.
+- Added a voltage monitor mode.
+- Add extra step to send SD commands and access large disk images. This will enhance Adam program compatibility, while maintaining the ability to use SD commands and very large disk images.
+- Fixed a write bug. ADE was not sending the required ACK after receiving the block data to write.
+- Fixed a timing bug in Process Command. ADE was sending the ACK back to the Adam too fast, it was sometimes missed.
+- Fixed the status not being reset after the status was sent. This caused issues with programs that tried to access blocks outside of the normal range on purpose. (ie Formatter 3)
+
+Version 0.4
+- Added large disk image support.
+- Added flag to disable the FACE command. This ties in with the large disk image support.
+- Added SD card commands. Adam can access the directory and mount images.
+- Added a delay to enable exact timing of an original disk drive. Default is 0.
+- Added the connection to the AdamNet reset line. This will enable a boot disk to be auto-mounted on an Adam reset.
+- Added the ability to assign a boot disk.
+- Added the ability to use digital buttons.
+
+Version 0.3
+
+- Bug fixes for AdamCalc
+- Added individual 1k buffers for each drive.
+- Added error when SD card is not inserted.
+- Increased the maximum files to 300
+- Added support of DDP files.
+
+Version 0.2
+- The right key now will mount and unmount the currently selected file to the selected drive.
+- The mounted files are saved to the eeprom. On power up they are re-mounted in the last position.
+- The big change is multi-drive support. There is a variable that can be changed when you upload the code to your Arduino (NumberofDrives). - This is located at the beginning of the main file. ADE will now emulate up to 4 drives at one time.
+
+
+Version 0.1
+- Initial Release
