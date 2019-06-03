@@ -1,7 +1,7 @@
 void AdamNetIdle(){                                                // Wait for AdamNet to go Idle
   byte IdleDetected = 0;
   int IdleCount = 0;
-  int IdleTimeout = 2380;                    // 1905 = 2ms, 2380 = 2.5ms, 2870 = 3ms
+  int IdleTimeout = 600;                    // 1905 = 2ms, 2380 = 2.5ms, 2870 = 3ms
   do{
     while ((PIND & _BV(PD2)) == 1){        // Wait for AdamNet to go LOW
     }

@@ -32,11 +32,11 @@ void ProcessKeys(){                                                // LCD and Bu
         LoadedBlock[DeviceDisplayed-4] = 0xFFFFFFFF; // Reset the loaded block for the new file
         StatusSetup(0x40,DeviceDisplayed); // Set the Status to 'disk in"
       }
-      EepromStringWrite((DeviceDisplayed * 300) + 2, GetFileName(FilesIndex[MountedFile[DeviceDisplayed-4]]));
+      EepromStringWrite((DeviceDisplayed * 400) + 2, GetFileName(FilesIndex[MountedFile[DeviceDisplayed-4]]));
       byte hiByte = highByte(MountedFile[DeviceDisplayed-4]);
       byte loByte = lowByte(MountedFile[DeviceDisplayed-4]);
-      EEPROM.write(DeviceDisplayed*300, hiByte);
-      EEPROM.write((DeviceDisplayed*300)+1, loByte);
+      EEPROM.write(DeviceDisplayed * 400, hiByte);
+      EEPROM.write((DeviceDisplayed * 400) + 1, loByte);
       refreshscreen = 1;
     }
     else if (keypressIn < AnalogTriggerUp || UpButton == LOW){    // Up -->     Scroll Up in the List

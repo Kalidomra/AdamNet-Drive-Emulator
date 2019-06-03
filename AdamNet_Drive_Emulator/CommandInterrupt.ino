@@ -32,7 +32,7 @@ void CommandInterrupt(){                                           // New byte o
         AdamNetSend(AcktoAdam,1);          // Send ACK
         AdamNetReceive(TransferCommand,9); // Get the Data transfer command, wanted block, etc
         if ((TransferCommand[0] >> 4) == 0x06){   
-          _delay_us(100);                  // Wait before sending the ACK. Otherwise Adam could miss it.
+          _delay_us(150);                  // Wait before sending the ACK. Otherwise Adam could miss it.
           AdamNetSend(AcktoAdam,1);        // Tell Adam the wanted block info was received
           AdamNetReceive(ReadorWrite,1);   // Get the next byte, this will determine if this is a read or a write.
           WantedBlock =((long)TransferCommand[6] << 24) + ((long)TransferCommand[5] << 16) + ((long)TransferCommand[4] << 8)  + TransferCommand[3];
@@ -84,10 +84,10 @@ void CommandInterrupt(){                                           // New byte o
             }
           }
           else if ((ReadorWrite[0] >> 4) == 0x0D){ // ================ This is a Write Command  ====================================================
-            _delay_us(100);                // Wait before sending the ACK. Otherwise Adam could miss it
+            _delay_us(150);                // Wait before sending the ACK. Otherwise Adam could miss it
             AdamNetSend(AcktoAdam,1);      // Tell Adam ready to receive the block write
             AdamNetReceive(BlockBuffer[WantedDevice-4],1028); // Receive the block with header and checksum
-            _delay_us(100);                // Wait before sending the ACK. Otherwise Adam could miss it
+            _delay_us(150);                // Wait before sending the ACK. Otherwise Adam could miss it
             AdamNetSend(AcktoAdam,1);      // Tell Adam received a block to write
             SaveBufferArrayFlag = 1;       // Set the flag to save the buffer
           }
@@ -103,7 +103,7 @@ void CommandInterrupt(){                                           // New byte o
         }
       }
       else if ((IncomingCommand >> 4) == 0x01){ // ==============  0x01 - Status Command  ===============================================
-        _delay_us(100);               // Wait before sending the Status. Otherwise Adam could miss it
+        _delay_us(150);               // Wait before sending the Status. Otherwise Adam could miss it
         AdamNetSend(Status[WantedDevice-4],6); // Send the Status
         AdamNetReceive(AckFromAdam,1);     // Receive ACK from Adam
         if (MountedFile[WantedDevice-4] == 0){ // After sending the Status, it should be reset. Check if there is a disk mounted.
@@ -126,5 +126,6 @@ void CommandInterrupt(){                                           // New byte o
     }
     //if (IncomingCommand != 0x41){Serial.println(IncomingCommand,HEX);}
   }
+  //EIFR = bit (INTF1);                      // Clear flag for any interrupts on INT1 (Reset) that were triggered while in the ISR
   EIFR = bit (INTF2);                      // Clear flag for any interrupts on INT2 that were triggered while in the ISR
 }

@@ -19,7 +19,10 @@ int AdamNetSend(byte arraytosend[], int lengthofarray){            // Send array
     }
 // ===============  Send Stop Bit ===============  
     PORTD |= _BV(PD0);                    // Set PD0 = LOW
-    _delay_us(15);                         // delay 
-    __asm__("nop\n\t");
+    _delay_us(14);                     // delay
+    __asm__("nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t""nop\n\t");
+
+    //_delay_us(15);                         // delay 
+    //__asm__("nop\n\t");
   }
 }

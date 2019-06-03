@@ -78,9 +78,12 @@ void SDCommand(byte devicenumber){                                 // Process a 
     BlockBufferChecksum(devicenumber);         // Calculate the checksum before sending
   }
   if (commandin == 0xF3){                  // READ - Mount/Unmount Disk
-    // data1 = not used, data2 = File Number (High) , data3 = File Number (Low)
+    // data1 = 1=Disable Next Reset, data2 = File Number (High) , data3 = File Number (Low)
     // The SD card directory starts at File Number 1 and increases by 1.
     // A File Number of 0 will unmount. 
+    if (data1 == 1){
+     DisableNextReset = true;
+    }
     if (data2 == 0 && data3 ==0){
       MountedFile[devicenumber - 4] = 0;
       Serial.print(F("Adam Command: Unmount D"));
@@ -98,9 +101,9 @@ void SDCommand(byte devicenumber){                                 // Process a 
       LoadedBlock[devicenumber-4] = 0xFFFFFFFF;
       StatusSetup(0x40,devicenumber);      // Set the Status to 'disk in"
     }
-    EepromStringWrite((devicenumber *300) + 2, GetFileName(FilesIndex[MountedFile[devicenumber-4]]));
-    EEPROM.write(devicenumber *300, data2);
-    EEPROM.write((devicenumber *300)+1, data3);
+    EepromStringWrite((devicenumber * 400) + 2, GetFileName(FilesIndex[MountedFile[devicenumber-4]]));
+    EEPROM.write(devicenumber * 400, data2);
+    EEPROM.write((devicenumber * 400)+1, data3);
     refreshscreen = 1;
   }
   if (commandin == 0xF4){                  // WRITE - Write to LCD

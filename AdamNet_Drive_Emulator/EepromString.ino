@@ -2,7 +2,7 @@ String EepromStringRead (int startinglocation){                    // Read a str
   String readingstring = "";
   int eeprombuffer=0;
   for(int i=0 ; i < NameLength ; i++){
-      eeprombuffer = EEPROM.read( startinglocation+ i);
+      eeprombuffer = EEPROM.read( startinglocation + i);
       if (eeprombuffer != 0 ){
         readingstring = readingstring+char(eeprombuffer);
       }

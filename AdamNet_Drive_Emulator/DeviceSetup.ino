@@ -1,10 +1,13 @@
-void DeviceSetup(){                                                // Initialize the eeprom and the devices
+void DeviceSetup(){                                                // Initialize the EEPROM and the devices
   byte numberofdrives = 0;
   Device4 = false;
   Device5 = false;
   Device6 = false;
   Device7 = false;
-  if (EEPROM.read(0) == 65 && EEPROM.read(1) == 68 && EEPROM.read(2) == 69){ // Check if the eeprom has been initialized
+  // Check if the EEPROM has been initialized. 3 Checks: 1 -> Bytes 'ADE', 2 -> NameLength Hasn't Changed, 3 -> Version Hasn't Changed
+  if ((EEPROM.read(0) == 65) && (EEPROM.read(1) == 68) && (EEPROM.read(2) == 69) &&
+      (EEPROM.read(32) == NameLength) && 
+      (EEPROM.read(16) == Version[0]) && (EEPROM.read(17) == Version[1]) && (EEPROM.read(18) == Version[2])){ 
    if (EEPROM.read(4) == 1){
       Device4 = true;
       numberofdrives++;
@@ -23,19 +26,34 @@ void DeviceSetup(){                                                // Initialize
     }
   }
   else{                                    // Eeprom is not initialized, let's set it up. Default is all drives on.
-    Serial.println(F(" Initializing Eeprom"));
+    Serial.println(F("EEPROM Not Initialized"));
+    Serial.println(F("Erasing EEPROM:"));
+    for (int w; w <= 4096; w++){
+      EEPROM.write(w,0xFF);
+      if ( w % 102 == 0){
+        Serial.print(F("."));
+      }
+    }
+    Serial.println();
+    Serial.println(F("Initializing EEPROM"));
+    Serial.println(F("D1, D2, D3 and D4 have been enabled"));
     Device4= true;
     Device5= true;
     Device6= true;
     Device7= true;
     EEPROM.write(0,65);                    // A  )
-    EEPROM.write(1,68);                    // D  } = Signature bytes to know that the eeprom has been configured.
+    EEPROM.write(1,68);                    // D  } = Signature bytes to know that the EEPROM has been configured.
     EEPROM.write(2,69);                    // E  )
     EEPROM.write(3,4);                     // Initial display device is 4
     EEPROM.write(4,1);                     // Enable Device 4
     EEPROM.write(5,1);                     // Enable Device 5
     EEPROM.write(6,1);                     // Enable Device 6
     EEPROM.write(7,1);                     // Enable Device 7
+    // Future Device bytes 8,9,10,11,12,13,14,15
+    EEPROM.write(16,Version[0]);           //  )
+    EEPROM.write(17,Version[1]);           //  } = Version Number
+    EEPROM.write(18,Version[2]);           //  )
+    EEPROM.write(32,NameLength);           // The maximum file length
     numberofdrives = 4;
   }
   if (numberofdrives == 0){                // No Drives have been turned on
@@ -97,10 +115,10 @@ void DeviceSetup(){                                                // Initialize
 }
 void DeviceSetupCommand(byte devicenumber){
   String eepromfilename;
-  byte hiByte =  EEPROM.read(devicenumber*300);
-  byte lowByte =  EEPROM.read((devicenumber*300) + 1);
+  byte hiByte =  EEPROM.read(devicenumber * 400);
+  byte lowByte =  EEPROM.read((devicenumber * 400) + 1);
   MountedFile[devicenumber-4] =  word(hiByte, lowByte);
-  eepromfilename = EepromStringRead((devicenumber *300) + 2);
+  eepromfilename = EepromStringRead((devicenumber * 400) + 2);
   if (MountedFile[devicenumber-4] > MaxFiles || eepromfilename != GetFileName(FilesIndex[MountedFile[devicenumber-4]])){
     MountedFile[devicenumber-4] = 0;
   }

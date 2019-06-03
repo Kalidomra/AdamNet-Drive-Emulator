@@ -4,14 +4,14 @@
 #include <SdFat.h>
 #include <LiquidCrystal.h>
 //============================================================================================================================================
-//==================================             AdamNet Drive Emulator (ADE)   v0.70         ================================================
+//==================================             AdamNet Drive Emulator (ADE)   v0.73         ================================================
 //============================================================================================================================================
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓   Only modify the following variables   ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-const byte Version[3] =  {0,7,0};          // ADE Version Number
+const byte Version[3] =  {0,7,3};          // ADE Version Number
 const unsigned int MaxFiles = 300;         // The maximum number of file names to load into the directory index array. (max = 300)
-const unsigned int NameLength = 100;       // Maximum length of file name to display. 16 will disable scrolling.
+const byte NameLength = 100;               // Maximum length of file name to display. 16 will disable scrolling. (max = 100)
 const byte StatusLed[4] = {13,13,13,13};   // Pins for Status LED. These can be combined or 1 for each device. 13 is the internal LED on the Mega
 const String BootDisk = "boot.dsk";        // Name of disk to auto-mount on D1. This will override the eeprom file. Set to "" for no boot disk
 const byte EnableAnalogButtons = true;     // For the 1602 Keypad Shield Buttons, leave this as 'true'. If you are using individual digital buttons set it to 'false'.
@@ -51,6 +51,7 @@ unsigned long LoadedBlock[4] = {0xFFFFFFFF,
                                0xFFFFFFFF,
                                0xFFFFFFFF,
                                0xFFFFFFFF};// The current block number that is loaded in the buffer array
+
 unsigned int MountedFile[4] = {0,0,0,0};   // The current mounted file index number
 unsigned int FilesIndex[MaxFiles + 1];     // Index for the files on the SD card
 byte typeindex[MaxFiles + 1];              // Index for the file type: 0 = DSK, 1 = DDP
@@ -60,7 +61,7 @@ unsigned int CurrentFile = 1;              // The current file index number that
 unsigned long LastButtonTime;              // Timer for last button push
 unsigned long LastCommandTime;             // Timer for last command processed. This is for the keypress disable while commands are coming in.
 unsigned long LastScrollLCD;               // Timer for scrolling the LCD
-unsigned long TimetoByte;                  // Timer for reset, used to determine Hard or Soft reset
+unsigned long TimetoByte = 0xFFFFFFFF;     // Timer for reset, used to determine Hard or Soft reset
 String LCDCurrentText;                     // Current Text on the bottom line of the LCD
 byte LCDScrollOn = true;                   // Turn off the scroll in the program. Used when writing to LCD. Turned back on with refreshscreen.
 unsigned int LCDScrollLocation = 0;        // Current location for scrolling the LCD
@@ -70,12 +71,14 @@ byte WantedDevice = 0x00;                  // The wanted device for the wanted b
 byte LoadBufferArrayFlag = 0;              // Flag for the main loop to load the buffer with the wanted block
 byte SaveBufferArrayFlag = 0;              // Flag for the main loop to save the buffer in the wanted block
 byte ResetFlag = 0;                        // Flag for the main loop to process a reset interrupt
+byte DisableNextReset = false;             // When set to true the next reset will not reset the devices.
 byte ProcessKeysDelay = 120;               // How long to wait before processing the next keypress.
 int AnalogTriggerRight = 50.0*(AnalogButtonSensitivity/100.0);
 int AnalogTriggerUp = 250.0*(AnalogButtonSensitivity/100.0);
 int AnalogTriggerDown = 450.0*(AnalogButtonSensitivity/100.0);
 int AnalogTriggerLeft = 650.0*(AnalogButtonSensitivity/100.0);
 int AnalogTriggerSelect = 850.0*(AnalogButtonSensitivity/100.0);
+
 SdFat sd;                                  // Setup SD Card
 SdFile file;                               // Setup SD Card
 void setup(){
@@ -114,11 +117,13 @@ void setup(){
     VoltageRead();
   }
   SDCardSetup();                           // Initialize the SD card and load the root directory
+
   DeviceSetup();                           // Initialize the Device and Device Display
   Serial.print(F("Free SRAM: "));          // Print the amount of Free SRAM
   Serial.println(FreeMemory());
   LastCommandTime = millis();              // Setup initial time for last command in ms
   LastScrollLCD = millis();                // Setup initial time for LCD scrolling
+  TimetoByte = millis();                   // Setup initial time for Reset Timing
   pinMode(AdamNetRx,INPUT_PULLUP);         // Setup AdamNetRx to input
   pinMode(AdamNetTx, OUTPUT);              // Setup AdamNetTx to Ouput
   digitalWrite(AdamNetTx, HIGH);           // Set the AdamNetTx to High
