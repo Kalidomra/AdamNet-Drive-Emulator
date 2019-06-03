@@ -3,7 +3,7 @@ Version 0.73
 - Re-implemented the "Disable Next Reset" option.
 Version 0.7
 - Moved the time critical AdamNet send and receive functions to the CommandInterrupt function. This ensures that data is being sent to the Adam with the correct timing and not being delayed due to LCD writes or button processing. This fixes the I/O errors in some titles and also prevents errors from buttons being pressed while blocks are loading. This is a major re-write of how the ADE interacts on the AdamNet.
-- Added the ability to detect the type of reset. A "hard" reset is from physically activating the reset switch on the Adam or truning it off and on. A "soft" reset is initiated by the Adam software. Only a "hard" reset will cause the book.dsk to be re-mounted. This fixes the issue with some games calling a software reset during loading.
+- Added the ability to detect the type of reset. A "hard" reset is from physically activating the reset switch on the Adam or turning it off and on. A "soft" reset is initiated by the Adam software. Only a "hard" reset will cause the book.dsk to be re-mounted. This fixes the issue with some games calling a software reset during loading.
 - Removed the "Disable Next Reset" option from the SD Command "0xF3 - Mount/Unmount Disk". This is no longer required now that the ADE can detect the type of reset.
 - The filename for the boot disk is no longer case sensitive. "Boot.DSK" will work even if the file is really called "boot.dsk"
 - Added status information to the block that is transmitted when the DEADBEEF block read is sent. See the SD Commands text file for the format. The basic program INIT on the ADE Test disk image will demonstrate this read.
