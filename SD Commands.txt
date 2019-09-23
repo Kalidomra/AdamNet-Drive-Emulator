@@ -1,24 +1,43 @@
-                            SD Commands (v0.7)
+                            SD Commands (v0.8)
 ===============================================================================
 
 First some background....
 
-The ADAM is capable of using 4 bytes to address the block numbers on AdamNET. 
+The ADAM is capable of using 4 bytes to address the block numbers on AdamNET.  
 
     00 00 00 00 - FF FF FF FF
 
-    This gives a maximum of 4,294,967,295 blocks. At 1024 bytes per block, the maximum media size is: 4,398,046,510,080 (4 Terabytes!)
+This gives a maximum of 4,294,967,295 blocks. At 1024 bytes per block, the
+maximum media size is: 4,398,046,510,080 (4 Terabytes!)
 
-Obviously this was overkill for the time. The regular Disk Drive and DDP only need the low byte (0-FF hex or 0-255 decimal) to address all of the blocks they have. The ADE utilizes a FAT32 file system, which is limited to 4gb disk image files. Using this we have a maximum block address of 3F FF FF (4,194,303 blocks) or 4,294,966,272 bytes for the ADE. 
+Obviously this was overkill for the time. The regular Disk Drive and DDP only 
+need the low byte (0-FF hex or 0-255 decimal) to address all of the blocks they
+ have. The ADE utilizes a FAT32 file system, which is limited to 4gb disk image
+ files. Using this we have a maximum block address of 
+3F FF FF (4,194,303 blocks) or 4,294,966,272 bytes for the ADE. 
 
-This leaves the high byte unused. So the ADE uses it as a command byte. If the ADE receives a read or write with the high byte populated it goes to a command handling section. Below is a list of the commands that can be used with the ADE.
+This leaves the high byte unused. So the ADE uses it as a command byte. If the 
+ADE receives a read or write with the high byte populated it goes to a command 
+handling section. Below is a list of the commands that can be used with the 
+ADE.
 
 ===============================================================================
 The ADE can run in two different modes:
 
-The first is "Compatible Block Mode". In this mode the ADE will only respond to block requests on the lower word (first 2 bytes). This is required due to some Adam programs that do not set the upper word to zero prior to a read or write. This is not a problem for a regular disk or tape drive, as these bytes are ignored. This is the default mode for the ADE.
+The first is "Compatible Block Mode". In this mode the ADE will only respond to 
+block requests on the lower word (first 2 bytes). This is required due to some 
+Adam programs that do not set the upper word to zero prior to a read or write. 
+This is not a problem for a regular disk or tape drive, as these bytes are 
+ignored. This is the default mode for the ADE.
 
-The second mode is "Enhanced Block Mode". In this mode the ADE will process the full 4 bytes of block address. This mode is required for disk images larger than 64 MB and to execute SD commands. To switch to this mode, send a read command to the block address DEADBEEF. The ADE will switch to Enhanced Block Mode until a reset on the AdamNet or ADE reset. Reading the DEADBEEF block will also transmit the status of the ADE. This is a read only block. Sending a write to this block will have no effect on the data. The beginning of the block will contain the following information:
+The second mode is "Enhanced Block Mode". In this mode the ADE will process the 
+full 4 bytes of block address. This mode is required for disk images larger 
+than 64 MB and to execute SD commands. To switch to this mode, send a read 
+command to the block address DEADBEEF. The ADE will switch to Enhanced Block 
+Mode until a reset on the AdamNet or ADE reset. Reading the DEADBEEF block will
+ also transmit the status of the ADE. This is a read only block. Sending a 
+write to this block will have no effect on the data. The beginning of the block
+ will contain the following information:
     
 Byte Number:             Data:
     0                    65 (41 HEX, Ascii A)
@@ -29,36 +48,78 @@ Byte Number:             Data:
     5                    Device 5 Enable (1=Enabled, 0=Disabled)
     6                    Device 6 Enable (1=Enabled, 0=Disabled)
     7                    Device 7 Enable (1=Enabled, 0=Disabled)
-    8,9,10               Version Number (ie: 0 7 0 = V0.70)
+    8,9,10               Version Number (ie: 0 8 0 = V0.80) - 3 bytes
+    11                   LCD Name Length
+    12,13                Number of files in the current directory - 2 bytes
+    20 - first Null	 Current directory
 
 ===============================================================================
 
-In order to execute SD commands, the ADE MUST be in Enhanced Block mode. The command format is AA BB CC DD. Where AA is the command byte. All commands are READ operations from the ADAM, except write to LCD. The command uses the device number that the read is issued on. For example, if you read block F2000000 on device 4, you will get a block with the currently mounted filename on device 4.
+In order to execute SD commands, the ADE MUST be in Enhanced Block mode. 
+The command format is AA BB CC DD. Where AA is the command byte. 
+All commands are READ operations, except write to LCD. The command uses the 
+device number that the read is issued on. For example, if you read block 
+F2000000 on device 4, you will get a block with the currently mounted filename 
+on device 4.
 
 ===============================================================================
-0xF1 - Return the SD Card Current Directory
-    BB = not used, CC = length of filenames, DD = Directory block to read
-    It starts with file number 1 name and then adds the other filenames on one at a time to fill the 1024 byte block. 
-    The names are ASCII encoded.
-    As the SD card dir can have more filenames than can fit in one 1024 block, you may need to read multiple directory blocks to get all of the filenames. After all the filenames the block will be filled with 0's.
-    Each directory block request should have the same filename length.
+0xF1 - Return the SD Card Current Directory List
+
+    BB = Send File Type, CC = length of filenames, DD = Directory block to read
+
+    It starts with file number 1 name and then adds the other filenames on one 
+    at a time to fill the 1024 byte block. The names are ASCII encoded.
+    As the SD card dir can have more filenames than can fit in one 1024 block, 
+    you may need to read multiple directory blocks to get all of the filenames.
+    After all the filenames the block will be filled with 0's.
+    BB = 0; This is to maintain compatibility with existing software.
+    BB = 1; Send the filetype as the first byte of the file name 
+            (0=[/], 1=[..], 3=Dir, 10=DSK, 11=DDP, 12=ROM, 
+             22=DS2, 23=DS3, 24=DS4)
+    Each consecutive directory block request should have the same filename 
+    length and the same BB setting.
 ===============================================================================
 0xF2 - Return Currently Mounted Disk
+
     BB = not used, CC = not used , DD = not used
-    Returns the mounted disk filename. 
+
+    Returns the mounted filename with the directory.
 ===============================================================================
 0xF3 - Mount/Unmount Disk
+
     BB = Disable Next Reset, CC = File Number (High) , DD = File Number (Low)
-    Setting BB to 1 will disable automounting the boot disk for the next reset. This is required if you have the AdamNET reset line attached and a boot disk image (ie boot.dsk) on the SD card. The idea is to have a boot.dsk with an SD card menu system on it. When a disk file is mounted from the menu program and the ADAM reset it will load that disk. You can play the game or use the utility and when you pull the Adam reset the boot disk will load with the menu program again.
+
+    Setting BB to 1 will disable automounting the boot disk for the next reset.
+    This is required if you have the AdamNET reset line attached and a boot 
+    disk image (ie boot.dsk) on the SD card. The idea is to have a boot.dsk 
+    with an SD card menu system on it. When a disk file is mounted from the 
+    menu program and the ADAM reset it will load that disk. You can play the 
+    game or use the utility and when you pull the Adam reset the boot disk will
+    load with the menu program again. This command will return the file type 
+    as the first byte. This is a very basic way that a boot disk menu program 
+    can determine if the mounted file is a directory or a DSK/DDP.
     The files on the SD card are indexed starting at 1. 
     A file number of 0 will unmount the current disk.
 ===============================================================================
 0xF4 - Write to LCD
+
     BB = Refresh, CC = not used, DD = Refresh
-    This command is used as a write address. The Adam would write to address F4000000. The block that is written will contain the ascii encoded text for the LCD. First 16 bytes are the top line, second 16 bytes are the bottom line. It will stay on the LCD until a button is pressed or a refresh command is sent.
-    Setting BB or DD to 1 will refresh the LCD back to the normal ADE display. It will ignore the write. The best method is to use BB.
+
+    This command is used as a write address. The Adam would write to address 
+    F4000000. The block that is written will contain the ascii encoded text for
+    the LCD. First 16 bytes are the top line, second 16 bytes are the bottom 
+    line. It will stay on the LCD until a button is pressed or a refresh 
+    command is sent. Setting BB or DD to 1 will refresh the LCD back to the 
+    normal ADE display. It will ignore the write. The best method is to use 
+    BB as this will not perform an inadvertent write to a normal drive.
 ===============================================================================
 0xFA - Format Disk
-    BB = not used, CC = not used , DD = not used
-    This will fill the entire disk with 0xe5 bytes. It can take days to format a large (4gb) image.
-    This command would be used if the 0xFACE command is disabled but you still need to format a disk.
+
+    BB = not used, CC = confirmation byte , DD = not used
+
+    This will fill the entire disk with 0xe5 bytes. It can take hours to format 
+    a large (4gb) image. This command could also be used if the 0xFACE command
+    is disabled but you still need to format a disk. The command is broken into
+    2 reads. The first is to 0xFA000000, this tells the ADE to format. The 
+    second read is to 0xFA00FA00, this is the confirmation. These reads need to
+    occur one after the other to work.

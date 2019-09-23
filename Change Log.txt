@@ -1,3 +1,22 @@
+Version 0.80
+- Added SD card directory support.
+- The right button (mount/unmount) action has changed. A short press will mount files and change directories. A long press will unmount the currently selected drive.
+- A long press on the drive select button will turn the boot disk on and off.
+- A short press on the left button will now go back one directory. A long press will go back to the root.
+- Added ColecoVision cartridge ROM support (Maximum 32k). Files needs to have a COL, BIN or ROM extension. Mounting a ROM file dynamically creates a disk image containing the required boot code and the ROM data. Nothing is saved to the SD card. In testing this feature there are a small number of ROM's that do not work.
+- Added a "Debug Mode" option to the Device Setup menu. When enabled this will display debug information on the LCD.
+- SD Command 0xF2 (Return Currently Mounted Disk) will now include the directory. 
+- SD Command 0xF3 (Mount/Unmount Disk) will return the file type in the block. This will enable the controlling Adam program to see the file type being mounted.
+- SD Command 0xFA (Format Disk) now requires a confirmation step to start the format. The confirmation needs to be the next read in order to work.
+- Added additional information to the block that is transmitted when the 0xDEADBEEF block read is sent. Including LCD name length, number of files in the current directory and the current directory string.
+- Changed the 0xFACE format command. It is much faster now.
+- Added support for a disk swap button. The disk swap only works on Device 4. Holding down the swap button on startup will either disable Device 5 if it is currently enabled, or enabled all of the devices if Device 5 is currently disabled. 
+- Added a check for the maximum number of files per directory. A warning will be sent to the serial port and the LCD.
+- Fixed the hard reset detection timing while using the IDE Boot rom. If this is still an issue, using the Debug Mode can help to determine the correct timings.
+- Fixed SD Command issues mounting D3.
+- Fixed the LCD Name Length bug. This can now be set to any number 99 or less. Using 12 or under will enable dos 8.3 file names. 
+- Fixed the issue with programs sending continuous unknown commands and locking up the LCD.  The ADE will still show that it received an unknown command, but this will not lock up the display.
+
 Version 0.73
 - Fixed the timing issue with some games causing corruption due to a double write.
 - Re-implemented the "Disable Next Reset" option.

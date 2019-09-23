@@ -3,10 +3,6 @@ AdamNet Drive Emulator (ADE)
 
 This is a beta. Use at your own risk.
 
-Version 0.5 has changed how the AdamNet line is connected; it now requires a PNP transistor. This version is not compatible with the old method of connecting the AdamNet line to the Mega2560.
-
-https://youtu.be/EGIlHEr0xxA
-
 Bill of Materials:
 
  1. Arduino Mega 2560 R3
@@ -15,6 +11,7 @@ Bill of Materials:
  4. 6 connector phone cable.
  5. 1k and 33 ohm resistors.
  6. PNP Transistor (2N3906)
+*Version 0.5 has changed how the AdamNet line is connected; it now requires a PNP transistor. This version is not compatible with the old method of connecting the AdamNet line to the Mega2560.
 
 How it is connected:
 
@@ -37,9 +34,23 @@ Installation:
 
 How it works:
 
-Place up to 300 files in the root of a FAT32 SD card. These can be in DSK or DDP format commonly found on the web. On startup of the ADE there is no mounted file. Scroll though the files using the up and down keys. Unmount or mount the currently selected file with the right key. The currently mounted file for the drive is shown on the top row. The select key will change the current drive displayed.
+Place up to 300 files per directory on a FAT32 formated SD card. These can be in DSK or DDP format commonly found on the web.
+On startup of the ADE there is no mounted file. Scroll though the files using the up and down keys. 
+Mount or change directory of the currently selected item in the bottom of the LCD with the right key. 
+Unmount with a long press of the right button.
+The currently mounted file for the drive is shown on the top row. The select key will change the current drive displayed.
 
 The ADE also has 2 setup/troubleshooting modes:
 
  1. Device Selection Mode: Hold the Select key while the ADE to starting up. In this mode, you can configure which drives will be enabled. After they are configured, restart the ADE to resume drive emulation.
  2. Voltage Mode: Holding the Mount/Unmount (Right) key while the ADE to starting up. In this mode the ADE will display the input voltage to the Mega2560. This can help trouble shoot some power related issues. The voltage should be close to 5v. Restart the ADE to resume drive emulation.
+
+Adam Side Image Manager:
+
+The ADE can respond to a number of special commands that control the mounted files and the sd card. 
+Milli has created an Adam disk that contains an image manager that works with the ADE. 
+http://adamware.us/ImageManager.php
+This program can be renamed as "boot.dsk" in the root directory of the SD card and it will out-mount and boot on a reset or cold boot of the Adam.
+
+
+
