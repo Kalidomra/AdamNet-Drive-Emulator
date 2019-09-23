@@ -50,7 +50,7 @@ Adam Side Image Manager:
 The ADE can respond to a number of special commands that control the mounted files and the sd card. 
 Milli has created an Adam disk that contains an image manager that works with the ADE. 
 http://adamware.us/ImageManager.php
-This program can be renamed as "boot.dsk" in the root directory of the SD card and it will out-mount and boot on a reset or cold boot of the Adam.
+This program can be renamed as "boot.dsk" in the root directory of the SD card and it will auto-mount and boot on a reset or cold boot of the Adam.
 
 
 
