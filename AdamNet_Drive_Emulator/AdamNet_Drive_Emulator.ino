@@ -10,9 +10,9 @@
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓   Only modify the following variables   ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 const byte Version[3] =  {0,8,2};          // ADE Version Number
-const byte StatusLEDState = HIGH;           // Initial state for the status LED's 
+const byte StatusLEDState = LOW;           // Initial state for the status LED's 
                                            // LOW = Normally off, on for activity   HIGH = Normally on, off for activity (ADE Lite = HIGH)
-const byte EnableAnalogButtons = false;     // For the 1602 Keypad Shield Buttons, leave this as 'true'.  (ADE Pro / ADE Lite = false)
+const byte EnableAnalogButtons = true;     // For the 1602 Keypad Shield Buttons, leave this as 'true'.  (ADE Pro / ADE Lite = false)
                                            // If you are using individual digital buttons set it to 'false'.
 const unsigned int StartupDelay = 0;       // Additional delay on startup in ms. 
                                            // This can help the Adam get to SmartWriter before the ADE finishes booting.
