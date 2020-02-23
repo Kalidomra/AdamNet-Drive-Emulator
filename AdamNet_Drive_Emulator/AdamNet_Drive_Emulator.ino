@@ -4,16 +4,18 @@
 #include <SdFat.h>
 #include <LiquidCrystal.h>
 //============================================================================================================================================
-//==================================             AdamNet Drive Emulator (ADE)   v0.80              ===========================================
+//==================================             AdamNet Drive Emulator (ADE)   v0.82              ===========================================
 //============================================================================================================================================
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓   Only modify the following variables   ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-const byte Version[3] =  {0,8,0};          // ADE Version Number
-const byte StatusLEDState = LOW;           // Initial state for the status LED's 
-                                           // LOW = Normally off, on for activity   HIGH = Normally on, off for activity
-const byte EnableAnalogButtons = true;     // For the 1602 Keypad Shield Buttons, leave this as 'true'. 
+const byte Version[3] =  {0,8,2};          // ADE Version Number
+const byte StatusLEDState = HIGH;           // Initial state for the status LED's 
+                                           // LOW = Normally off, on for activity   HIGH = Normally on, off for activity (ADE Lite = HIGH)
+const byte EnableAnalogButtons = false;     // For the 1602 Keypad Shield Buttons, leave this as 'true'.  (ADE Pro / ADE Lite = false)
                                            // If you are using individual digital buttons set it to 'false'.
+const unsigned int StartupDelay = 0;       // Additional delay on startup in ms. 
+                                           // This can help the Adam get to SmartWriter before the ADE finishes booting.
 const unsigned int MaxFiles = 300;         // The maximum number of file names to load into the directory index array.
 const byte LCDNameLength = 99;             // Maximum length of file name to display on LCD.
                                            // 17 will disable scrolling. 12 or less will display 8.3 filenames (max = 99)
@@ -32,8 +34,8 @@ const long IODelay = 0;                    // Delay in microseconds the loading 
                                            // A real Adam disk drive is 300,000 - 500,000 (0.3-0.5 sec), however 0 works for everything I tried.
 const unsigned long LCDDelay = 40000;      // How long a message will stay on the LCD until it reverts to regular display.
                                            // Setting LCDScrollOn = false will disable this.
-unsigned long LongKey = 5000;              // Delay to determine a what is a long key press. 
-const unsigned int StartupDelay = 0;       // Additional delay on startup in ms. This can help the Adam get to SmartWriter before the ADE finishes booting. 
+const unsigned long LongKey = 100000;      // Delay to determine what is a long key press. This is loop timing not ms.
+const byte RepeatKeyDelay = 180;           // How long to wait before repeating key press. Only Up and Down will repreat if held.(ms)
 String CurrentDirectory = "/";             // The initial directory for the LCD display and the SD commands.
 //↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
 //↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
@@ -92,8 +94,7 @@ byte LoadBufferArrayFlag = 0;              // Flag for the main loop to load the
 byte SaveBufferArrayFlag = 0;              // Flag for the main loop to save the buffer in the wanted block
 byte ResetFlag = 0;                        // Flag for the main loop to process a reset interrupt
 byte DisableNextReset = false;             // When set to true the next reset will not reset the devices.
-byte RepeatKeyFlag = 0;                    // Prevent repeat directory changes and mount/unmount if button is held
-byte ProcessKeysDelay = 180;               // How long to wait before processing the next keypress (ms)
+byte RepeatKeyFlag = 0;                    // Flag to prevent repeats on certain buttons.
 byte SDCommandFAConfirm = 0;               // Confirmation byte for the SD Command FA
 int AnalogTriggerRight = 50.0*(AnalogButtonSensitivity/100.0);
 int AnalogTriggerUp = 250.0*(AnalogButtonSensitivity/100.0);
@@ -103,7 +104,6 @@ int AnalogTriggerSelect = 850.0*(AnalogButtonSensitivity/100.0);
 SdFat sd;                                  // Setup SD Card
 SdFile file;                               // Setup SD Card
 void setup(){
-  //Serial.begin(115200);
   Serial.begin(1000000);
   lcd.begin(16, 2);                        // Start the LCD screen
   lcd.clear();
@@ -126,14 +126,8 @@ void setup(){
   pinMode(LeftButtonPin,INPUT_PULLUP);     // Set the LeftButtonPin to Input Pullup
   pinMode(SelectButtonPin,INPUT_PULLUP);   // Set the SelectButtonPin to Input Pullup
   pinMode(SwapButtonPin,INPUT_PULLUP);     // Set the SwapButtonPin to Input Pullup
-  int InitReadKeys = 1000;                 // Initial analog button read
-  if (EnableAnalogButtons){
-    InitReadKeys = analogRead(0);          // Read the analog buttons
-  }
-  else{
-    LongKey = LongKey*20;
-  }
-  if (digitalRead(SwapButtonPin) == LOW){  // SwapButtonPin is held low on boot Device 5 is disabled. If Device 5 is already disabled, it is enabled
+  byte InitialKeypress = ReadButtons();    // See if any buttons are being pushed
+  if (InitialKeypress == 6){               // Swap Button Held - Device 5 is disabled. If Device 5 is already disabled, it is enabled
     if (EEPROM.read(5) == 1){
       Serial.println(F("Disabling Device 5")); 
       EEPROM.write(5,0);                   // Disable Device 5
@@ -146,11 +140,11 @@ void setup(){
       EEPROM.write(7,1);                   // Enable Device 7
     }
   }
-  if (digitalRead(SelectButtonPin) == LOW || (InitReadKeys < AnalogTriggerSelect && InitReadKeys > AnalogTriggerLeft)){
+  if (InitialKeypress == 95){              // Select Button Held - Entering Configuration Mode
     Serial.println(F("Entering Configuration Mode"));
     ConfigMode();
   }
-  if (digitalRead(RightButtonPin) == LOW || InitReadKeys < AnalogTriggerRight){
+  if (InitialKeypress == 91){              // Right Button Held - Entering Voltage Test Mode
     Serial.println(F("Entering Voltage Test Mode"));
     VoltageRead();
   }
@@ -161,6 +155,7 @@ void setup(){
   Serial.println(FreeMemory());
   LastCommandTime = millis();              // Setup initial time for last command in ms
   LastScrollLCD = millis();                // Setup initial time for LCD scrolling
+  LastButtonTime = millis();
   TimetoByte = millis();                   // Setup initial time for Reset Timing
   pinMode(AdamNetRx,INPUT_PULLUP);         // Setup AdamNetRx to input
   pinMode(AdamNetTx, OUTPUT);              // Setup AdamNetTx to Ouput

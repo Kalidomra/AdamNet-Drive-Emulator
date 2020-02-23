@@ -1,6 +1,5 @@
 void ConfigMode(){                                                 // Configuration Mode
   byte LCDRefresh = 1;
-  int keypressIn  = 1000;
   const String RootMenu[6] = {"Exit","D1: ","D2: ","D3: ","D4: ", "Debug Mode: "};
   byte MenuItem = 1;
   Device4 = false;
@@ -25,10 +24,8 @@ void ConfigMode(){                                                 // Configurat
     DebugMode = true;
   }
   while(1){
-    if (EnableAnalogButtons){
-      keypressIn = analogRead(0);
-    }    
-    if (keypressIn < AnalogTriggerRight || digitalRead(RightButtonPin) == LOW){
+    byte ButtonPressed = ReadButtons();
+    if (ButtonPressed == 1){               // Right button pressed
       if (MenuItem == 1){
         if(Device4 == true){
           Device4 = false;
@@ -85,7 +82,7 @@ void ConfigMode(){                                                 // Configurat
       }
       LCDRefresh = 1;
     }
-    else if (keypressIn < AnalogTriggerUp || digitalRead(UpButtonPin) == LOW){
+    else if (ButtonPressed == 2){          // Up button pressed
       if (MenuItem == 0){
         MenuItem = 5;
       }
@@ -94,7 +91,7 @@ void ConfigMode(){                                                 // Configurat
       }
       LCDRefresh = 1;
     }
-    else if (keypressIn < AnalogTriggerDown || digitalRead(DownButtonPin) == LOW){
+    else if (ButtonPressed == 3){          // Down button pressed
       if (MenuItem == 5){
         MenuItem = 0;
       }

@@ -1,3 +1,6 @@
+Version 0.82
+- Re-wrote the key press handling function. This adds in better de-bouncing and less lag time.
+- Changed the ADAMnet send timings. This will allow the ADE to work with a wider range of Mega clones.
 Version 0.80
 - Added SD card directory support.
 - The right button (mount/unmount) action has changed. A short press will mount files and change directories. A long press will unmount the currently selected drive.

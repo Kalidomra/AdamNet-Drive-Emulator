@@ -117,6 +117,11 @@ void SDCommand(byte devicenumber){                                 // Process a 
     for (int i = mountedfilename.length() + 6; i <= 1026 ; i++){ // Fill the rest of the buffer with 0x00
       BlockBuffer[devicenumber-4][i] = 0x00;
     }
+
+for (int i = 0; i <= 1026 ; i++){ // Fill the rest of the buffer with 0x00
+     Serial.println(BlockBuffer[devicenumber-4][i]);
+}
+    
     BlockBufferChecksum(devicenumber);     // Calculate the checksum before sending
   }
   if (commandin == 0xF3){                  // READ - Mount/Unmount Disk

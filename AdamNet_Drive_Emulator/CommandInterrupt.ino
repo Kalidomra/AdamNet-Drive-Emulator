@@ -5,6 +5,7 @@ void CommandInterrupt(){                                           // New byte o
   byte AcktoAdam[1] = {0x00};              // Ack to Adam from Device
   byte AckFromAdam[1]= {0x00};             // Ack from Adam to Device
   byte IncomingCommand = 0x00;             // Incoming command from AdamNet
+  byte KeyboardResponse[2]= {0x00,0x00};
   if ((LoadBufferArrayFlag == 0) && (SaveBufferArrayFlag == 0) && (ResetFlag == 0)){ // If there are no load, saves or resets to complete
     IncomingCommand = 0x00;                // Zero out the IncomingCommand
     // ===============  Already received the transition to the start bit  ===============
@@ -122,7 +123,7 @@ void CommandInterrupt(){                                           // New byte o
         else{
           StatusSetup(0x40, WantedDevice);
         }
-        LastCommandTime = millis();          // Reset the Last Command timer
+        LastCommandTime = millis();        // Reset the Last Command timer
       }  
       else {                               // ===================  Unknown Command  =====================================================
         Serial.print(F("D"));
@@ -139,6 +140,7 @@ void CommandInterrupt(){                                           // New byte o
         detachInterrupt(digitalPinToInterrupt(AdamNetRx));
       }
     }
+
     else {                                 // The incoming byte is not for any of the drives that are enabled
       AdamNetIdle();                       // Wait for the AdamNet to go Idle
     }
