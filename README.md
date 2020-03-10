@@ -5,12 +5,13 @@ This is a beta. Use at your own risk.
 
 Bill of Materials:
 
- 1. Arduino Mega 2560 R3 - An original Arduino or a quality replica. Cheap clones do not work.
+ 1. Arduino Mega 2560 R3 - An original Arduino or a quality replica.
  2. 1602 Keypad Shield - Arduino Version
  3. SD Card Shield - Micro SD with level converter
  4. 6 connector phone cable.
  5. 1k and 33 ohm resistors.
  6. PNP Transistor (2N3906)
+ 
 *Version 0.5 has changed how the AdamNet line is connected; it now requires a PNP transistor. This version is not compatible with the old method of connecting the AdamNet line to the Mega2560.
 
 How it is connected:
