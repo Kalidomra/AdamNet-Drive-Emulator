@@ -1,4 +1,4 @@
-                            SD Commands (v0.8)
+                            SD Commands (v0.90)
 ===============================================================================
 
 First some background....
@@ -59,31 +59,32 @@ In order to execute SD commands, the ADE MUST be in Enhanced Block mode.
 The command format is AA BB CC DD. Where AA is the command byte. 
 All commands are READ operations, except write to LCD. The command uses the 
 device number that the read is issued on. For example, if you read block 
-F2000000 on device 4, you will get a block with the currently mounted filename 
+F2000000 on device 4, you will get a block with the currently mounted file name 
 on device 4.
 
 ===============================================================================
 0xF1 - Return the SD Card Current Directory List
 
-    BB = Send File Type, CC = length of filenames, DD = Directory block to read
+    BB = Send File Type, CC = length of file names, DD = Directory block to read
 
-    It starts with file number 1 name and then adds the other filenames on one 
+    It starts with file number 1 name and then adds the other file names on one 
     at a time to fill the 1024 byte block. The names are ASCII encoded.
-    As the SD card dir can have more filenames than can fit in one 1024 block, 
+    As the SD card dir can have more file names than can fit in one 1024 block, 
     you may need to read multiple directory blocks to get all of the filenames.
-    After all the filenames the block will be filled with 0's.
+    After all the file names the block will be filled with 0's.
     BB = 0; This is to maintain compatibility with existing software.
     BB = 1; Send the filetype as the first byte of the file name 
-            (0=[/], 1=[..], 3=Dir, 10=DSK, 11=DDP, 12=ROM, 
+            (1=[/], 2=[..], 3=Dir, 10=DSK, 11=DDP, 12=ROM, 
              22=DS2, 23=DS3, 24=DS4)
     Each consecutive directory block request should have the same filename 
     length and the same BB setting.
+    If the directory has over 300 files, the status will be set to 1.
 ===============================================================================
 0xF2 - Return Currently Mounted Disk
 
     BB = not used, CC = not used , DD = not used
 
-    Returns the mounted filename with the directory.
+    Returns the mounted file name with the directory.
 ===============================================================================
 0xF3 - Mount/Unmount Disk
 
@@ -112,6 +113,61 @@ on device 4.
     command is sent. Setting BB or DD to 1 will refresh the LCD back to the 
     normal ADE display. It will ignore the write. The best method is to use 
     BB as this will not perform an inadvertent write to a normal drive.
+===============================================================================
+0xF5 - Save ADE Config 
+
+    BB = not used, CC = not used, DD = not used
+
+    This command is a write. It saves the ADE configuration in the incoming
+    block.
+===============================================================================
+0xF6 - Delete File or Directory 
+
+    BB = 0 or 0xF6, CC = File Number (High), DD = File Number (Low)
+
+    This delete command uses 2 reads in order to initiate the image delete. 
+    Both include the file number. First a read to High Word 0xF600 and then a
+    read to High Word 0xF6F6 to confirm the delete.
+    They need to be in order with no block reads between them.
+===============================================================================
+0xF7 - Create Image File or Directory
+
+    BB = not used, CC = not used, DD = not used
+
+    This command is a write.  Creates a disk image file in the current dir.
+    It will automatically add the correct extension based on the file type.
+    If there is an error creating the dir or file, the status is set to 1.
+    The write contains the following information:
+
+    Byte 0 = File type (3=Dir, 10=DSK, 11=DDP, 12=ROM, 22=DS2, 23=DS3, 24=DS4)
+    Byte 1 and 2 = File Size in Blocks ( Max 0x3FFF )
+    Byte 3-102 = File name, doesn't include extension
+===============================================================================
+0xF8 - Rename Image File or Directory
+
+    BB = not used, CC = not used, DD = not used
+
+    This command is a write.  Renames a disk image file.
+    It will remove any existing extensions, spaced before the extension and
+    spaces after the extension. It then adds the correct extension based
+    on the file type. If there is an error renaming, the status is set to 1.
+    The write contains the following information:
+    
+    Byte 0 = File type (3=Dir, 10=DSK, 11=DDP, 12=ROM, 22=DS2, 23=DS3, 24=DS4)
+             This can be different from the original file type. 
+             It will change the extension, but will not convert the file.
+             ie: it will not convert a .dsk to a.ddp.
+    Byte 1 and 2 = File Number in the current directory
+    Byte 3-102 = The new file name
+===============================================================================
+0xF9 - Cut, Copy and Paste
+
+    BB = 1 for Cut, 2 for Copy, 3 for Paste, 4 for Clear Data
+    CC = File Number (High), DD = File Number (Low)
+
+    This command will store the cut or copy information in the EEPROM.
+    And paste to the current directory. If there is an with the operation, 
+    the status is set to 1.
 ===============================================================================
 0xFA - Format Disk
 

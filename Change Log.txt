@@ -1,3 +1,14 @@
+Version 0.90
+- In addition to this release, I have also release the initial version of ADE Commander. More information at: https://git.io/JUy69
+- Needed to change the file type number assignments for the root, back directory and directory. Using 0 didn't make sense.
+- Fixed a bug in the file type encoding. It was not sending as a byte, but rather as ASCII.
+- Small bug fixes in the SD command handling.
+- Fixed a bug in how the ADE set the drive status. 
+- Added SD Command 0xF5 - Save ADE Config
+- Added SD Command 0xF6 - Delete File or Directory
+- Added SD Command 0xF7 - Create Image File or Directory
+- Added SD Command 0xF8 - Rename Image File or Directory
+- Added SD Command 0xF9 - Cut, Copy and Paste Image File
 Version 0.82
 - Re-wrote the key press handling function. This adds in better de-bouncing and less lag time.
 - Changed the ADAMnet send timings. This will allow the ADE to work with a wider range of Mega clones.

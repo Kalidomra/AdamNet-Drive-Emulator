@@ -41,4 +41,7 @@ void BufferSaveBlock(){                                            // Save Buffe
   if (SDCommandFAConfirm > 0){               // Decrease the confirmation byte for the SD command FA.
     SDCommandFAConfirm--;
   }
+   if (SDCommandF6Confirm > 0){               // Decrease the confirmation byte for the SD command F6.
+    SDCommandF6Confirm--;
+  }
 }

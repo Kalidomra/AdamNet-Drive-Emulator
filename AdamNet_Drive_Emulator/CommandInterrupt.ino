@@ -57,7 +57,7 @@ void CommandInterrupt(){                                           // New byte o
                   if (WantedBlock > 0x003FFFFF){
                     LoadedBlock[WantedDevice-4] = 0xFFFFFFFF; //Reset the loaded block for DEADBEEF or SD card reads
                   }
-                  StatusSetup(0x40,WantedDevice);// Set the Status to all good
+                  //StatusSetup(0x40,WantedDevice);// Set the Status to all good
                 }
                 else if ((AckFromAdam[0]  >> 4) == 0x0D){
                   Serial.print(F("Error: Sending Block: ")); // Adam did not send back "Acknowledged"
@@ -117,11 +117,21 @@ void CommandInterrupt(){                                           // New byte o
         AdamNetReceive(AckFromAdam,1);     // Receive ACK from Adam
         word CheckMountedFile;
         EEPROM.get((WantedDevice * 400), CheckMountedFile);
-        if ((CheckMountedFile == 0) && (BootDiskMounted == 0)){ // After sending the Status, it should be reset. Check if there is a disk mounted.
-          StatusSetup(0x43, WantedDevice);
+        if (WantedDevice == 4){
+          if ((CheckMountedFile == 0) && (BootDiskMounted == 0)){ // After sending the Status, it should be reset. Check if there is a disk mounted.
+            StatusSetup(0x43, WantedDevice);
+          }
+          else{
+            StatusSetup(0x40, WantedDevice);
+          }
         }
         else{
-          StatusSetup(0x40, WantedDevice);
+          if (CheckMountedFile == 0){ 
+            StatusSetup(0x43, WantedDevice);
+          }
+          else{
+            StatusSetup(0x40, WantedDevice);
+          }
         }
         LastCommandTime = millis();        // Reset the Last Command timer
       }  
@@ -140,7 +150,21 @@ void CommandInterrupt(){                                           // New byte o
         detachInterrupt(digitalPinToInterrupt(AdamNetRx));
       }
     }
-
+/*    else if (WantedDevice == 1){           // Keyboard Command
+      AdamNetReceive(KeyboardResponse,1);
+      if (KeyboardResponse[0] == 0x91){
+        byte KeypressIn[1];
+        byte KeypressIn2[4];
+        AdamNetReceive(KeypressIn,1);   // receive 0x31 clear to send from Adam 
+        AdamNetReceive(KeypressIn2,5);     // Get the next 5 bytes (ie 0xB1 0x00 0x01 0x74 0x74  <--- letter "t")
+        Serial.print(F("Keypress: "));
+        Serial.print(KeypressIn2[3]);
+        Serial.print(" : ");
+        Serial.println(KeypressIn2[4]);
+      }
+      AdamNetIdle(); 
+    }
+*/
     else {                                 // The incoming byte is not for any of the drives that are enabled
       AdamNetIdle();                       // Wait for the AdamNet to go Idle
     }

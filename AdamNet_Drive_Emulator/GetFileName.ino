@@ -2,10 +2,10 @@ String GetFileName(unsigned int IncomingFileIndex, byte NameLength){ // Get the 
   char incomingfilename[NameLength+1];
   byte error = 0;
   String testfilename = "";
-  if ((TypeIndex[IncomingFileIndex] == 0)){
+  if ((TypeIndex[IncomingFileIndex] == 1)){
     return "[/]";
   }
-  if ((TypeIndex[IncomingFileIndex] == 1)){
+  if ((TypeIndex[IncomingFileIndex] == 2)){
     return "[..]";
   }
   if ((TypeIndex[IncomingFileIndex] == 255)){
@@ -36,7 +36,7 @@ do {
   file.close();
 }while(error != 0);
   file.close();
-  if (TypeIndex[IncomingFileIndex] == 2){   // If the filename is a Directory then add []
+  if (TypeIndex[IncomingFileIndex] == 3){   // If the filename is a Directory then add []
     testfilename = "[" + testfilename + "]";
   }
   return testfilename;

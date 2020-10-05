@@ -16,10 +16,12 @@ void ProcessKeys(){                                                // Process a 
       EEPROM.put((DeviceDisplayed * 400) + 4, TypeIndex[CurrentFile]); // Write the File Type
       EepromStringWrite((DeviceDisplayed * 400) + 5, FileNametoMount);
       EepromStringWrite((DeviceDisplayed * 400) + 105, CurrentDirectory);
-      BootDiskMounted = 0;
+      if (DeviceDisplayed == 4){
+        BootDiskMounted = 0;
+      }
       LCDTopDelay = 1;
       }
-    else if (TypeIndex[CurrentFile] == 0){                             // This is a go back to root. [/]
+    else if (TypeIndex[CurrentFile] == 1){                             // This is a go back to root. [/]
        CurrentDirectory = "/";
        Serial.print(F("Changing to Directory: "));
        Serial.println(CurrentDirectory);
@@ -31,11 +33,11 @@ void ProcessKeys(){                                                // Process a 
        LCDTopDelay = LCDDelay;
        lcd.setCursor(0,1);
        lcd.print(F("Loading Dir...  "));
-       SDCardGetDir();
+       SDCardGetDir(1);
        CurrentFile = 1;
        LCDBottomDelay = 1;
     }
-    else if (TypeIndex[CurrentFile] == 1){                             // This is the previous directory [..]
+    else if (TypeIndex[CurrentFile] == 2){                             // This is the previous directory [..]
       CurrentDirectory.remove(CurrentDirectory.length()-1,1);
       int templast = CurrentDirectory.lastIndexOf("/");
       if (templast <= 0){
@@ -55,11 +57,11 @@ void ProcessKeys(){                                                // Process a 
       LCDTopDelay = LCDDelay;
       lcd.setCursor(0,1);
       lcd.print(F("Loading Dir...  "));
-      SDCardGetDir();
+      SDCardGetDir(1);
       SetCurrentFile();
       LCDBottomDelay = 1;
     }
-    else if (TypeIndex[CurrentFile] == 2){                             // This is a directory
+    else if (TypeIndex[CurrentFile] == 3){                             // This is a directory
       String tempdir = GetFileName(CurrentFile,99);
       if (CurrentDirectory == "/"){
         CurrentDirectory = CurrentDirectory + tempdir.substring(1, tempdir.length()-1);
@@ -77,7 +79,7 @@ void ProcessKeys(){                                                // Process a 
       LCDTopDelay = LCDDelay;
       lcd.setCursor(0,1);
       lcd.print(F("Loading Dir...  "));
-      SDCardGetDir();
+      SDCardGetDir(1);
       SetCurrentFile();
       LCDBottomDelay = 1;
      }
@@ -92,7 +94,9 @@ void ProcessKeys(){                                                // Process a 
       EEPROM.write((DeviceDisplayed * 400) + 4, 0);      // Write the File Type = 0
       EepromStringWrite((DeviceDisplayed * 400) + 5, "");// Write the File Name = "" 
       EepromStringWrite((DeviceDisplayed * 400) + 105, "");  // Write the current directory = ""
-      BootDiskMounted = 0;
+      if (DeviceDisplayed == 4){
+        BootDiskMounted = 0;
+      }
     }
     LCDTopDelay = 1;
   }
@@ -134,7 +138,7 @@ void ProcessKeys(){                                                // Process a 
     LCDTopDelay = LCDDelay;
     lcd.setCursor(0,1);
     lcd.print(F("Loading Dir...  "));
-    SDCardGetDir();
+    SDCardGetDir(1);
     SetCurrentFile();
     LCDBottomDelay = 1;
   }
@@ -150,7 +154,7 @@ void ProcessKeys(){                                                // Process a 
     LCDTopDelay = LCDDelay;
     lcd.setCursor(0,1);
     lcd.print(F("Loading Dir...  "));
-    SDCardGetDir();
+    SDCardGetDir(1);
     SetCurrentFile();
     LCDBottomDelay = 1;
   }

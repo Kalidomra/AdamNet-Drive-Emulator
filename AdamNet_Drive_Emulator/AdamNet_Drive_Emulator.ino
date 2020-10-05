@@ -4,12 +4,12 @@
 #include <SdFat.h>
 #include <LiquidCrystal.h>
 //============================================================================================================================================
-//==================================             AdamNet Drive Emulator (ADE)   v0.82              ===========================================
+//==================================             AdamNet Drive Emulator (ADE)   v0.90                 ========================================
 //============================================================================================================================================
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓   Only modify the following variables   ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-const byte Version[3] =  {0,8,2};          // ADE Version Number
+const byte Version[3] =  {0,9,0};          // ADE Version Number
 const byte StatusLEDState = LOW;           // Initial state for the status LED's 
                                            // LOW = Normally off, on for activity   HIGH = Normally on, off for activity (ADE Lite = HIGH)
 const byte EnableAnalogButtons = true;     // For the 1602 Keypad Shield Buttons, leave this as 'true'.  (ADE Pro / ADE Lite = false)
@@ -95,7 +95,9 @@ byte SaveBufferArrayFlag = 0;              // Flag for the main loop to save the
 byte ResetFlag = 0;                        // Flag for the main loop to process a reset interrupt
 byte DisableNextReset = false;             // When set to true the next reset will not reset the devices.
 byte RepeatKeyFlag = 0;                    // Flag to prevent repeats on certain buttons.
+byte TooMany = 0;                          // Flag to indicate too many files to load in the current directory
 byte SDCommandFAConfirm = 0;               // Confirmation byte for the SD Command FA
+byte SDCommandF6Confirm = 0;               // Confirmation byte for the SD Command F6
 int AnalogTriggerRight = 50.0*(AnalogButtonSensitivity/100.0);
 int AnalogTriggerUp = 250.0*(AnalogButtonSensitivity/100.0);
 int AnalogTriggerDown = 450.0*(AnalogButtonSensitivity/100.0);
@@ -131,6 +133,8 @@ void setup(){
     if (EEPROM.read(5) == 1){
       Serial.println(F("Disabling Device 5")); 
       EEPROM.write(5,0);                   // Disable Device 5
+      Serial.println(F("Enabling Device 4")); 
+      EEPROM.write(4,1);                   // Enable Device 4 
     }
     else if (EEPROM.read(5) == 0){         // Enable all Devices for normal operation and correct any config errors that could make devices lost for good.
       Serial.println(F("Enabling all Devices"));
@@ -149,7 +153,7 @@ void setup(){
     VoltageRead();
   }
   SDCardSetup();                           // Initialize the SD card
-  SDCardGetDir();                          // Load the root directory
+  SDCardGetDir(1);                         // Load the root directory
   DeviceSetup();                           // Initialize the Device and Device Display
   Serial.print(F("Free SRAM: "));          // Print the amount of Free SRAM
   Serial.println(FreeMemory());

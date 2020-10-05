@@ -11,6 +11,11 @@ void BufferLoadBlock(){                                            // Load data 
   }
   else if (WantedBlock == 0xDEADBEEF){     // ============== Enhanced Mode Block Load ===============
     Serial.println(F("Enhanced Block Mode Enabled"));
+    Serial.println(F("Clearing Cut/Copy Filename"));
+    EEPROM.put(100, 0);                   // Write the flag to indicate if this is a cut or copy
+    EEPROM.put(101, 0);                   // Write the File Number
+    EEPROM.put(103, 0);                   // Write the File Number Index
+    EepromStringWrite(105, "");
     BlockBuffer[WantedDevice-4][0] = 0xB0 + WantedDevice;
     BlockBuffer[WantedDevice-4][1] = 0x04;
     BlockBuffer[WantedDevice-4][2] = 0x00;
@@ -23,7 +28,7 @@ void BufferLoadBlock(){                                            // Load data 
     BlockBuffer[WantedDevice-4][14] = EEPROM.read(32);  // LCD Name Length
     BlockBuffer[WantedDevice-4][15] = highByte(NumberofFiles);
     BlockBuffer[WantedDevice-4][16] = lowByte(NumberofFiles);
-    BlockBuffer[WantedDevice-4][17] = 0;
+    BlockBuffer[WantedDevice-4][17] = EEPROM.read(33);  // Debug Mode
     BlockBuffer[WantedDevice-4][18] = 0;
     BlockBuffer[WantedDevice-4][19] = 0;
     BlockBuffer[WantedDevice-4][20] = 0;
@@ -48,5 +53,8 @@ void BufferLoadBlock(){                                            // Load data 
   }
   if (SDCommandFAConfirm > 0){               // Decrease the confirmation byte for the SD command FA.
     SDCommandFAConfirm--;
+  }
+   if (SDCommandF6Confirm > 0){               // Decrease the confirmation byte for the SD command FA.
+    SDCommandF6Confirm--;
   }
 }
