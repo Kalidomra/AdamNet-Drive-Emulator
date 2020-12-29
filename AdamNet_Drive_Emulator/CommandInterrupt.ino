@@ -46,6 +46,7 @@ void CommandInterrupt(){                                           // New byte o
             WantedBlock = temp;
           }
           if ((ReadorWrite[0] >> 4) == 0x04){ // ================ This is a Read Command  ====================================================
+            DoubleReset = false;
             if (WantedBlock == LoadedBlock[WantedDevice-4]){  // The wanted block is loaded into the buffer
               _delay_us(150);              // Wait before sending the ACK. Otherwise Adam could miss it.
               AdamNetSend(AcktoAdam,1);    // Tell Adam the wanted block is loaded into the buffer
@@ -92,6 +93,7 @@ void CommandInterrupt(){                                           // New byte o
             }
           }
           else if ((ReadorWrite[0] >> 4) == 0x0D){ // ================ This is a Write Command  ====================================================
+            DoubleReset = false;
             _delay_us(150);                // Wait before sending the ACK. Otherwise Adam could miss it
             AdamNetSend(AcktoAdam,1);      // Tell Adam ready to receive the block write
             AdamNetReceive(BlockBuffer[WantedDevice-4],1028); // Receive the block with header and checksum

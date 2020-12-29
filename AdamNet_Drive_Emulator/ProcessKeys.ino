@@ -224,14 +224,14 @@ void ProcessKeys(){                                                // Process a 
     if ((BootDiskEnabled == 1) && (BootDiskExists == 1)){
       BootDiskEnabled = 0;
       lcd.setCursor(0,0);
-      lcd.print(F("Boot Disk Off   "));
-      Serial.println(F("Boot Disk Off"));
+      lcd.print(F("AutoMnt Boot Off"));
+      Serial.println(F("AutoMount Boot off"));
     }
     else if ((BootDiskEnabled == 0) && (BootDiskExists == 1)){
       BootDiskEnabled = 1;
       lcd.setCursor(0,0);
-      lcd.print(F("Boot Disk On    "));
-      Serial.println(F("Boot Disk On"));
+      lcd.print(F("AutoMnt Boot On "));
+      Serial.println(F("AutoMount Boot On"));
     }
     else{
       lcd.setCursor(0,0);

@@ -1,3 +1,7 @@
+Version 0.91
+- Fix a bug in the boot disk handling on reset.
+- Renamed the LCD text "Boot Disk On" to "AutoMnt Boot On" and "Boot Disk Off" to "AutoMnt Boot Off". This matches what the ADE is actually doing when the Drive Select key is held for a long key press. It doesn't unmount the boot.dsk, it enables and disables the auto mount on a reset.
+- Added in detection for consecutive soft resets, they will be treated as a hard resets.
 Version 0.90
 - In addition to this release, I have also released the initial version of ADE Commander. More information at: https://git.io/JUy69
 - Needed to change the file type number assignments for the root, back directory and directory. Using 0 didn't make sense.

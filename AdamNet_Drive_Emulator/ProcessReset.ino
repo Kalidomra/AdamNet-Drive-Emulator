@@ -10,7 +10,10 @@ void ProcessReset(){                                               // Process a 
   if (TimeSinceReset <= 5){
     TimeSinceReset = 160;
   }
-  if (((TimeSinceReset <= 175) && (TimeSinceReset >= 153)) || ((TimeSinceReset <= 23) && (TimeSinceReset >= 15))){
+  if (DoubleReset == true){
+    Serial.println(F("Double Reset Detected - Treating as Hard Reset"));
+  }
+  if ((((TimeSinceReset <= 175) && (TimeSinceReset >= 153)) || ((TimeSinceReset <= 23) && (TimeSinceReset >= 15)))|| DoubleReset == true){
     if ((BootDiskExists == 1) && (BootDiskEnabled == 1)) {              // If there is a boot disk then mount it.
       LoadedBlock[0] = 0xFFFFFFFF;         // Set he loaded block to unloaded.
       StatusSetup(0x40, 4);                // Set the Status to "disk in"
@@ -20,16 +23,21 @@ void ProcessReset(){                                               // Process a 
       Serial.println(BootDisk);
     }
     DebugText = "Hard Reset: ";
-    Serial.println(F("Hard Reset from AdamNet"));
+    Serial.print(F("Hard Reset from AdamNet: "));
+    Serial.print(TimeSinceReset);
+    Serial.println(F(" ms"));
     CompMode = true;
     Serial.println(F("Compatible Block Mode Enabled"));
   }
   else if ((TimeSinceReset < 33) && (TimeSinceReset > 5)){
-    BootDiskMounted = 0;
+    // BootDiskMounted = 0;
     DebugText = "Soft Reset: ";
-    Serial.println(F("Soft Reset from AdamNet"));
+    Serial.print(F("Soft Reset from AdamNet: "));
+    Serial.print(TimeSinceReset);
+    Serial.println(F(" ms"));
     CompMode = true;
     Serial.println(F("Compatible Block Mode Enabled"));
+    DoubleReset = true;
   } 
  // else{
  //  DebugText = "Adam Off: ";

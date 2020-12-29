@@ -4,12 +4,12 @@
 #include <SdFat.h>
 #include <LiquidCrystal.h>
 //============================================================================================================================================
-//==================================             AdamNet Drive Emulator (ADE)   v0.90                 ========================================
+//==================================             AdamNet Drive Emulator (ADE)   v0.91                 ========================================
 //============================================================================================================================================
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓   Only modify the following variables   ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-const byte Version[3] =  {0,9,0};          // ADE Version Number
+const byte Version[3] =  {0,9,1};          // ADE Version Number
 const byte StatusLEDState = LOW;           // Initial state for the status LED's 
                                            // LOW = Normally off, on for activity   HIGH = Normally on, off for activity (ADE Lite = HIGH)
 const byte EnableAnalogButtons = true;     // For the 1602 Keypad Shield Buttons, leave this as 'true'.  (ADE Pro / ADE Lite = false)
@@ -94,6 +94,7 @@ byte LoadBufferArrayFlag = 0;              // Flag for the main loop to load the
 byte SaveBufferArrayFlag = 0;              // Flag for the main loop to save the buffer in the wanted block
 byte ResetFlag = 0;                        // Flag for the main loop to process a reset interrupt
 byte DisableNextReset = false;             // When set to true the next reset will not reset the devices.
+byte DoubleReset = false;                  // Detects if we get 2 consecutive soft resets, treats the second as a hard reset.
 byte RepeatKeyFlag = 0;                    // Flag to prevent repeats on certain buttons.
 byte TooMany = 0;                          // Flag to indicate too many files to load in the current directory
 byte SDCommandFAConfirm = 0;               // Confirmation byte for the SD Command FA
