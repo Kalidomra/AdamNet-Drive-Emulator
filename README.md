@@ -27,7 +27,8 @@ The AdamNet Drive Emulator (ADE) is an SD card drive emulator for the ColecoVisi
 ###Installation:
 
  1. Install the Arduino IDE and configure it for the Mega2560: https://www.arduino.cc/
- 2. Install the SD Card Library to your Arduino IDE: https://github.com/greiman/SdFat    
+ 2. Install the SD Card Library to your Arduino IDE: https://github.com/greiman/SdFat/releases
+	NOTE: Use version 1.1.4, ADE will not compile with version 2.0 or above.
  	How to install a library: https://www.arduino.cc/en/guide/libraries
  3. Download the latest ADE release from GitHub. Load it in the Arduino IDE. You should see all of the ADE tabs open in the Arduino IDE.
  4. Connect the Mega2560 to the USB port. Press the "Upload" button in the Arduino IDE to compile and upload.
