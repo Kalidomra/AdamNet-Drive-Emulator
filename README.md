@@ -3,6 +3,9 @@
 The AdamNet Drive Emulator (ADE) is an SD card drive emulator for the ColecoVision Adam. It replicates all of the known drive commands and has no known incompatibilities. It is written in C++ using the Arduino IDE. It is simple to assemble for anyone with basic electronics skills. I have also created a companion program for the Adam called ADE Commander (ADEC) https://github.com/Kalidomra/ADE-Commander. This program is put in the root of the SD card as "boot.dsk". 
 
 			This is a beta. Use at your own risk.
+			
+You can wire up your own without a PCB using the instructions below, or build a PCB using the layout provided by Chris Tersteeg: https://github.com/djtersteegc/coleco-adam-ade-pro-shield
+
 
 ### Bill of Materials:
 
