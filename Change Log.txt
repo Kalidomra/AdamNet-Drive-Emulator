@@ -1,3 +1,5 @@
+Version 0.92
+- Added support for separate read and write LEDs or multi-colored LEDs.
 Version 0.91
 - Fix a bug in the boot disk handling on reset.
 - Renamed the LCD text "Boot Disk On" to "AutoMnt Boot On" and "Boot Disk Off" to "AutoMnt Boot Off". This matches what the ADE is actually doing when the Drive Select key is held for a long key press. It doesn't unmount the boot.dsk, it enables and disables the auto mount on a reset.

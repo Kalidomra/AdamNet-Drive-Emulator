@@ -4,13 +4,14 @@
 #include <SdFat.h>
 #include <LiquidCrystal.h>
 //============================================================================================================================================
-//==================================             AdamNet Drive Emulator (ADE)   v0.91                 ========================================
+//==================================             AdamNet Drive Emulator (ADE)   v0.92                 ========================================
 //============================================================================================================================================
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓   Only modify the following variables   ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-const byte Version[3] =  {0,9,1};          // ADE Version Number
+const byte Version[3] =  {0,9,2};          // ADE Version Number
 const byte StatusLEDState = LOW;           // Initial state for the status LED's 
+const byte ActivityLEDState = LOW;         // Initial state for the Activity LED
                                            // LOW = Normally off, on for activity   HIGH = Normally on, off for activity (ADE Lite = HIGH)
 const byte EnableAnalogButtons = true;     // For the 1602 Keypad Shield Buttons, leave this as 'true'.  (ADE Pro / ADE Lite = false)
                                            // If you are using individual digital buttons set it to 'false'.
@@ -19,7 +20,9 @@ const unsigned int StartupDelay = 0;       // Additional delay on startup in ms.
 const unsigned int MaxFiles = 300;         // The maximum number of file names to load into the directory index array.
 const byte LCDNameLength = 99;             // Maximum length of file name to display on LCD.
                                            // 17 will disable scrolling. 12 or less will display 8.3 filenames (max = 99)
-const byte StatusLed[4] = {13,13,13,13};   // Pins for Status LED. These can be combined or 1 for each device. 13 is the internal LED on the Mega
+const byte StatusLedRead[4] = {13,13,13,13};  // Pins for Read Status LED. These can be combined or 1 for each device. 13 is the internal LED on the Mega
+const byte StatusLedWrite[4] = {13,13,13,13}; // Pins for Write Status LED. These can be combined or 1 for each device. 13 is the internal LED on the Mega
+const byte ActivityLed = 13;               // Pin for the Activity LED. 13 is the internal LED on the Mega
 const String BootDisk = "boot.dsk";        // Name of disk to auto-mount on Device 4. This will override the eeprom file. Set to "" for no boot disk
 const String BootDiskDir = "/";            // Directory that the boot disk is in.
 const byte BootDiskType = 10;              // Set the file type for the boot disk. 10 = Disk, 11 = DDP. No other type is valid.
@@ -120,9 +123,13 @@ void setup(){
   Serial.print(F("Starting: ADE v"));
   Serial.println(String(Version[0]) + "." + String(Version[1]) + String(Version[2]));
   for(int t=0; t<=3;t++){
-    pinMode(StatusLed[t],OUTPUT);          // Set the Status LED's as output
-    digitalWrite(StatusLed[t],StatusLEDState); // Set the Status LED  
+    pinMode(StatusLedRead[t],OUTPUT);               // Set the Read Status LED's as output
+    digitalWrite(StatusLedRead[t],StatusLEDState);  // Set the Read Status LED  
+    pinMode(StatusLedWrite[t],OUTPUT);              // Set the Write Status LED's as output
+    digitalWrite(StatusLedWrite[t],StatusLEDState); // Set the Write Status LED  
   }
+  pinMode(ActivityLed,OUTPUT);                // Set the Activity LED as output
+  digitalWrite(ActivityLed,ActivityLEDState); // Set the Activity LED
   pinMode(RightButtonPin,INPUT_PULLUP);    // Set the RightButtonPin to Input Pullup
   pinMode(UpButtonPin,INPUT_PULLUP);       // Set the UpButtonPin to Input Pullup
   pinMode(DownButtonPin,INPUT_PULLUP);     // Set the DownButtonPin to Input Pullup
@@ -173,7 +180,7 @@ void setup(){
 }
 void loop(){
   if (SaveBufferArrayFlag == 1){           // Is there a pending buffer save?
-    digitalWrite(StatusLed[WantedDevice-4], !digitalRead(StatusLed[WantedDevice-4]));// Turn on the Status LED
+    digitalWrite(StatusLedWrite[WantedDevice-4], !digitalRead(StatusLedWrite[WantedDevice-4]));// Turn on the Status LED
     noInterrupts();                        // Disable Interrupts
     BufferSaveBlock();                     // Process the save command
     LastCommandTime = millis();            // Reset the Last Command timer
@@ -181,10 +188,10 @@ void loop(){
     SaveBufferArrayFlag = 0;               // Reset the flag
     EIFR = bit (INTF2);                    // Clear flag for interrupt 2 (AdamNet Receive)
     interrupts();                          // Enable Interrupts
-    digitalWrite(StatusLed[WantedDevice-4], !digitalRead(StatusLed[WantedDevice-4]));// Turn off the Status LED
+    digitalWrite(StatusLedWrite[WantedDevice-4], !digitalRead(StatusLedWrite[WantedDevice-4]));// Turn off the Status LED
   }
   if (LoadBufferArrayFlag == 1){           // Is there a pending buffer load?
-    digitalWrite(StatusLed[WantedDevice-4], !digitalRead(StatusLed[WantedDevice-4]));// Turn on the Status LED
+    digitalWrite(StatusLedRead[WantedDevice-4], !digitalRead(StatusLedRead[WantedDevice-4]));// Turn on the Status LED
     noInterrupts();                        // Disable Interrupts
     BufferLoadBlock();                     // Process the load command
     LastCommandTime = millis();            // Reset the Last Command timer
@@ -192,7 +199,7 @@ void loop(){
     LoadBufferArrayFlag = 0;               // Reset the flag
     EIFR = bit (INTF2);                    // Clear flag for interrupt 2 (AdamNet Receive)
     interrupts();                          // Enable Interrupts
-    digitalWrite(StatusLed[WantedDevice-4], !digitalRead(StatusLed[WantedDevice-4]));;// Turn off the Status LED
+    digitalWrite(StatusLedRead[WantedDevice-4], !digitalRead(StatusLedRead[WantedDevice-4]));;// Turn off the Status LED
   }
   if (ResetFlag == 1){
     ProcessReset();                        // Process the Reset
